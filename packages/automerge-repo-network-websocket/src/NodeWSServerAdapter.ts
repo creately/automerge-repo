@@ -113,7 +113,11 @@ export class NodeWSServerAdapter extends NetworkAdapter {
     const documentId = "documentId" in message ? "@" + message.documentId : ""
     const { byteLength } = messageBytes
     log(`[${senderId}->${myPeerId}${documentId}] ${type} | ${byteLength} bytes`)
+    this.receiveClientMessage(message, socket)
+  }
 
+  receiveClientMessage(message: FromClientMessage, socket: WebSocket) {
+    const senderId = message.senderId
     if (isJoinMessage(message)) {
       const { peerMetadata, supportedProtocolVersions } = message
       const existingSocket = this.sockets[senderId]
