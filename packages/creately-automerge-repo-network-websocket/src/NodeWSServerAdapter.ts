@@ -1,25 +1,23 @@
 import { NodeWSServerAdapter as BaseAdapter } from '@automerge/automerge-repo-network-websocket';
-import { WebSocket } from 'ws';
-import { type WebSocketServer } from "isomorphic-ws";
+import { type WebSocketServer, type WebSocket } from "isomorphic-ws";
 import { AuthMessage, FromClientMessage, isAuthMessage } from './messages.js';
 
 import {
     cbor as cborHelpers,
     PeerId,
+    Message,
     RequestMessage,
     SyncMessage
 } from "@automerge/automerge-repo/slim";
 
 const { /* encode,  */decode } = cborHelpers;
 
-type SyncOrRequestMessage = SyncMessage | RequestMessage;
-
-export type MessageHandler<X, M = SyncOrRequestMessage> = (
+export type MessageHandler<X, M = Message> = (
     message: M,
     socket: WebSocketWithIdentity,
     context: NodeWSServerAdapter<X> // thisArg
 ) => void;
-export type ClientMessageHandler<X, M = SyncOrRequestMessage> = (
+export type ClientMessageHandler<X, M = Message> = (
     message: M,
     socket: WebSocketWithIdentity,
     context: NodeWSServerAdapter<X>, // thisArg
@@ -39,23 +37,37 @@ export class NodeWSServerAdapter<T> extends BaseAdapter {
         next(message, socket, ctx);
     };
 
+    private logger = console;
+
     constructor(
         server: WebSocketServer,
         keepAliveInterval = 5000,
-        private userIdentityResolver: (authToken: string) => Promise<T>,
+        private userIdentityResolver: (authToken: string) => Promise<T|null>,
         options: {
             syncMessageHandler?: ClientMessageHandler<T, SyncMessage>,
             requestMessageHandler?: ClientMessageHandler<T, RequestMessage>,
+            logger?: typeof console
         } = {}
     ) {
         super(server, keepAliveInterval);
-        const { syncMessageHandler, requestMessageHandler } = options;
+        const { syncMessageHandler, requestMessageHandler, logger } = options;
         if (syncMessageHandler) {
             this.syncMessageHandler = syncMessageHandler;
         }
         if (requestMessageHandler) {
             this.requestMessageHandler = requestMessageHandler;
         }
+        if (logger) {
+            this.logger = logger;
+        }
+    }
+
+    setSyncMessageHandler(handler: ClientMessageHandler<T, SyncMessage>) {
+        this.syncMessageHandler = handler;
+    }
+
+    setRequestMessageHandler(handler: ClientMessageHandler<T, RequestMessage>) {
+        this.requestMessageHandler = handler;
     }
 
     receiveClientMessage(message: FromClientMessage, socket: WebSocketWithIdentity): void {
@@ -74,7 +86,7 @@ export class NodeWSServerAdapter<T> extends BaseAdapter {
             return;
         }
         if (socket.peerId && socket.peerId !== message.senderId) {
-            console.warn(`Peer ${socket.peerId} trying to send a message as ${message.senderId}`);
+            this.logger.warn(`Peer ${socket.peerId} trying to send a message as ${message.senderId}`);
             return;
         }
         if (message.type === "sync") {
@@ -93,7 +105,7 @@ export class NodeWSServerAdapter<T> extends BaseAdapter {
     protected async authenticate(message: AuthMessage, socket: WebSocketWithIdentity) {
         if (this.sockets[message.senderId] !== socket) {
             // something fishy is going on
-            console.error(`Peer ${message.senderId} sent an auth message from a different socket`);
+            this.logger.error(`Peer ${message.senderId} sent an auth message from a different socket`);
             this.send({
                 type: "auth_result",
                 success: false,
@@ -107,8 +119,11 @@ export class NodeWSServerAdapter<T> extends BaseAdapter {
         try {
             const payload = await this.userIdentityResolver(message.authToken);
             socket.authenticated = !!payload;
-            // TODO: set peer identity here
-            this.peerIdentity[message.senderId] = payload;
+            if ( payload ) {
+                this.peerIdentity[message.senderId] = payload;
+            }
+        } catch (e) {
+            this.logger.error(`Error authenticating peer ${message.senderId}`, e);
         } finally {
             if (socket.authenticated) {
                 this.send({
@@ -131,5 +146,5 @@ export class NodeWSServerAdapter<T> extends BaseAdapter {
 
 export interface WebSocketWithIdentity extends WebSocket {
     authenticated: boolean;
-    peerId?: PeerId;
+    peerId: PeerId;
 }
