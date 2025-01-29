@@ -12,7 +12,7 @@
     "@automerge/automerge": "^2.2.5",
     "@automerge/automerge-repo": "workspace:*",
     "@automerge/automerge-repo-network-messagechannel": "workspace:*",
-    "@automerge/automerge-repo-network-websocket": "workspace:*",
+    "@creately/automerge-repo-network-websocket": "workspace:*",
     "@automerge/automerge-repo-react-hooks": "workspace:*",
     "@automerge/automerge-repo-storage-indexeddb": "workspace:*",
     "react": "^18.2.0",

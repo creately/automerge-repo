@@ -125,7 +125,7 @@ importers:
       '@automerge/automerge-repo-network-messagechannel':
         specifier: workspace:*
         version: link:../../packages/automerge-repo-network-messagechannel
-      '@automerge/automerge-repo-network-websocket':
+      '@creately/automerge-repo-network-websocket':
         specifier: workspace:*
         version: link:../../packages/automerge-repo-network-websocket
       '@automerge/automerge-repo-react-hooks':
@@ -152,7 +152,7 @@ importers:
       '@automerge/automerge-repo-network-broadcastchannel':
         specifier: workspace:*
         version: link:../../packages/automerge-repo-network-broadcastchannel
-      '@automerge/automerge-repo-network-websocket':
+      '@creately/automerge-repo-network-websocket':
         specifier: workspace:*
         version: link:../../packages/automerge-repo-network-websocket
       '@automerge/automerge-repo-react-hooks':
@@ -229,7 +229,7 @@ importers:
       '@automerge/automerge-repo-network-broadcastchannel':
         specifier: workspace:*
         version: link:../../packages/automerge-repo-network-broadcastchannel
-      '@automerge/automerge-repo-network-websocket':
+      '@creately/automerge-repo-network-websocket':
         specifier: workspace:*
         version: link:../../packages/automerge-repo-network-websocket
       '@automerge/automerge-repo-storage-indexeddb':
@@ -260,7 +260,7 @@ importers:
       '@automerge/automerge-repo':
         specifier: workspace:*
         version: link:../../packages/automerge-repo
-      '@automerge/automerge-repo-network-websocket':
+      '@creately/automerge-repo-network-websocket':
         specifier: workspace:*
         version: link:../../packages/automerge-repo-network-websocket
       '@automerge/automerge-repo-storage-nodefs':
@@ -424,22 +424,6 @@ importers:
       execa:
         specifier: ^8.0.1
         version: 8.0.1
-
-  packages/creately-automerge-repo-network-websocket:
-    dependencies:
-      '@automerge/automerge-repo':
-        specifier: workspace:*
-        version: link:../automerge-repo
-      '@automerge/automerge-repo-network-websocket':
-        specifier: workspace:*
-        version: link:../automerge-repo-network-websocket
-      isomorphic-ws:
-        specifier: ^5.0.0
-        version: 5.0.0(ws@8.18.0)
-    devDependencies:
-      '@types/jsonwebtoken':
-        specifier: ^9.0.7
-        version: 9.0.7
 
 packages:
 

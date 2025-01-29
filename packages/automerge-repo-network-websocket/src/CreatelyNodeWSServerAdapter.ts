@@ -1,6 +1,6 @@
 import { NodeWSServerAdapter as BaseAdapter } from './NodeWSServerAdapter.js';
 import { type WebSocketServer, type WebSocket } from "isomorphic-ws";
-import { AuthMessage, FromClientMessage, isAuthMessage } from '../../creately-automerge-repo-network-websocket/src/messages.js';
+import { AuthMessage, FromClientMessage, isAuthMessage } from './messages.js';
 
 import {
     cbor as cborHelpers,

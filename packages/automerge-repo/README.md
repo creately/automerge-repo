@@ -23,7 +23,7 @@ Other packages in this monorepo include:
 
 #### Network adapters
 
-- [@automerge/automerge-repo-network-websocket](/packages/automerge-repo-network-websocket/): Network adapters
+- [@creately/automerge-repo-network-websocket](/packages/automerge-repo-network-websocket/): Network adapters
   for both sides of a client/server configuration over websocket
 - [@automerge/automerge-repo-network-messagechannel](/packages/automerge-repo-network-messagechannel/): A
   network adapter that uses the [MessageChannel
@@ -233,7 +233,7 @@ Now import it and add it to your list of network adapters:
 
 ```ts
 // main.tsx
-import { BrowserWebSocketClientAdapter } from "@automerge/automerge-repo-network-websocket" // <-- add this line
+import { BrowserWebSocketClientAdapter } from "@creately/automerge-repo-network-websocket" // <-- add this line
 
 // ...
 

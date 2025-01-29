@@ -3,7 +3,7 @@ import fs from "fs"
 import express from "express"
 import { WebSocketServer } from "ws"
 import { Repo } from "@automerge/automerge-repo"
-import { NodeWSServerAdapter } from "@automerge/automerge-repo-network-websocket"
+import { NodeWSServerAdapter } from "@creately/automerge-repo-network-websocket"
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs"
 import os from "os"
 

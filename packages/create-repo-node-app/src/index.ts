@@ -18,7 +18,7 @@ function createPackageJson(projectName: string) {
     },
     dependencies: {
       "@automerge/automerge-repo": "^1.0",
-      "@automerge/automerge-repo-network-websocket": "^1.0",
+      "@creately/automerge-repo-network-websocket": "^1.0",
       "@automerge/automerge-repo-storage-nodefs": "^1.0",
     },
   }
@@ -30,7 +30,7 @@ function createPackageJson(projectName: string) {
 
 function createIndexJs(projectName: string) {
   const indexJsContent = `import { Repo } from "@automerge/automerge-repo"
-import { BrowserWebSocketClientAdapter } from "@automerge/automerge-repo-network-websocket"
+import { BrowserWebSocketClientAdapter } from "@creately/automerge-repo-network-websocket"
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs"
 
 const repo = new Repo({

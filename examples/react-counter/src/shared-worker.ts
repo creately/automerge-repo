@@ -17,7 +17,7 @@ const repoPromise = (async () => {
     "@automerge/automerge-repo-storage-indexeddb"
   )
   const { BrowserWebSocketClientAdapter } = await import(
-    "@automerge/automerge-repo-network-websocket"
+    "@creately/automerge-repo-network-websocket"
   )
   return new Repo({
     storage: new IndexedDBStorageAdapter(),
