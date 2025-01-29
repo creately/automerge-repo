@@ -51,10 +51,10 @@ export type ErrorMessage = {
 }
 
 /** A message from the client to the server */
-export type FromClientMessage = JoinMessage | LeaveMessage | Message
+export type FromClientMessage = JoinMessage | LeaveMessage | Message | AuthMessage
 
 /** A message from the server to the client */
-export type FromServerMessage = PeerMessage | ErrorMessage | Message
+export type FromServerMessage = PeerMessage | ErrorMessage | Message | AuthResultMessage
 
 // TYPE GUARDS
 
@@ -73,3 +73,25 @@ export const isPeerMessage = (
 export const isErrorMessage = (
   message: FromServerMessage
 ): message is ErrorMessage => message.type === "error"
+
+export type AuthMessage = {
+    type: "auth";
+    /** The PeerID of the client */
+    senderId: PeerId;
+
+    /** Metadata presented by the peer  */
+    authToken: string;
+}
+
+export type AuthResultMessage = {
+    type: "auth_result";    /** The PeerID of the client */
+    success: boolean;
+}
+
+export const isAuthMessage = (
+    message: FromClientMessage
+): message is AuthMessage => message.type === "auth"
+
+export const isAuthResultMessage = (
+    message: FromServerMessage
+): message is AuthResultMessage => message.type === "auth_result"
