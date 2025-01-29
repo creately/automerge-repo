@@ -15,8 +15,8 @@
 export { BrowserWebSocketClientAdapter } from "./CreatelyBrowserWebSocketClientAdapter.js"
 export { NodeWSServerAdapter } from "./CreatelyNodeWSServerAdapter.js"
 export type {
-  FromClientMessage,
-  FromServerMessage,
+  CreatelyFromClientMessage as FromClientMessage,
+  CreatelyFromServerMessage as FromServerMessage,
   JoinMessage,
   LeaveMessage,
   ErrorMessage,

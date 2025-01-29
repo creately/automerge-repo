@@ -1,6 +1,6 @@
 import { BrowserWebSocketClientAdapter as BaseAdapter } from './BrowserWebSocketClientAdapter.js';
 import { cbor, PeerId } from '@automerge/automerge-repo/slim';
-import { AuthMessage, FromClientMessage, FromServerMessage, isAuthResultMessage } from './messages.js';
+import { AuthMessage, CreatelyFromClientMessage, CreatelyFromServerMessage, isAuthResultMessage } from './messages.js';
 
 export class BrowserWebSocketClientAdapter extends BaseAdapter {
 
@@ -18,12 +18,12 @@ export class BrowserWebSocketClientAdapter extends BaseAdapter {
         }
     }
 
-    send(message: FromClientMessage): void {
+    send(message: CreatelyFromClientMessage): void {
         super.send(message as any);
     }
 
     receiveMessage(messageBytes: Uint8Array): void {
-        const message: FromServerMessage = cbor.decode(new Uint8Array(messageBytes));
+        const message: CreatelyFromServerMessage = cbor.decode(new Uint8Array(messageBytes));
         if (messageBytes.byteLength === 0)
             throw new Error("received a zero-length message")
         if (isAuthResultMessage(message)) {

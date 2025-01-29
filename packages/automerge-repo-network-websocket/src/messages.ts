@@ -51,10 +51,16 @@ export type ErrorMessage = {
 }
 
 /** A message from the client to the server */
-export type FromClientMessage = JoinMessage | LeaveMessage | Message | AuthMessage
+export type FromClientMessage = JoinMessage | LeaveMessage | Message
 
 /** A message from the server to the client */
-export type FromServerMessage = PeerMessage | ErrorMessage | Message | AuthResultMessage
+export type FromServerMessage = PeerMessage | ErrorMessage | Message
+
+/** A message from the client to the server */
+export type CreatelyFromClientMessage = FromClientMessage | AuthMessage
+
+/** A message from the server to the client */
+export type CreatelyFromServerMessage = FromServerMessage | AuthResultMessage
 
 // TYPE GUARDS
 
@@ -89,9 +95,9 @@ export type AuthResultMessage = {
 }
 
 export const isAuthMessage = (
-    message: FromClientMessage
+    message: CreatelyFromClientMessage
 ): message is AuthMessage => message.type === "auth"
 
 export const isAuthResultMessage = (
-    message: FromServerMessage
+    message: CreatelyFromServerMessage
 ): message is AuthResultMessage => message.type === "auth_result"

@@ -1,16 +1,13 @@
 import { NodeWSServerAdapter as BaseAdapter } from './NodeWSServerAdapter.js';
 import { type WebSocketServer, type WebSocket } from "isomorphic-ws";
-import { AuthMessage, FromClientMessage, isAuthMessage } from './messages.js';
+import { AuthMessage, CreatelyFromClientMessage, isAuthMessage } from './messages.js';
 
 import {
-    cbor as cborHelpers,
     PeerId,
     Message,
     RequestMessage,
     SyncMessage
 } from "@automerge/automerge-repo/slim";
-
-const { /* encode,  */decode } = cborHelpers;
 
 export type MessageHandler<X, M = Message> = (
     message: M,
@@ -70,7 +67,7 @@ export class NodeWSServerAdapter<T> extends BaseAdapter {
         this.requestMessageHandler = handler;
     }
 
-    receiveClientMessage(message: FromClientMessage, socket: WebSocketWithIdentity): void {
+    receiveClientMessage(message: CreatelyFromClientMessage, socket: WebSocketWithIdentity): void {
         if (isAuthMessage(message)) {
             if (!this.sockets[message.senderId]) {
                 // wait for join message
