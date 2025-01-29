@@ -41,8 +41,8 @@ export class NodeWSServerAdapter<T> extends BaseAdapter {
 
     constructor(
         server: WebSocketServer,
-        keepAliveInterval = 5000,
         private userIdentityResolver: (authToken: string) => Promise<T|null>,
+        keepAliveInterval = 5000,
         options: {
             syncMessageHandler?: ClientMessageHandler<T, SyncMessage>,
             requestMessageHandler?: ClientMessageHandler<T, RequestMessage>,
