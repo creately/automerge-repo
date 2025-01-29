@@ -3,14 +3,10 @@ import { cbor, PeerId } from '@automerge/automerge-repo/slim';
 import { AuthMessage, FromClientMessage, FromServerMessage, isAuthResultMessage } from './messages.js';
 
 export class BrowserWebSocketClientAdapter extends BaseAdapter {
-    #authResolver?: () => void;
-    #authPromise: Promise<void> = new Promise<void>(resolve => {
-        this.#authResolver = resolve
-    });
 
     constructor(
         url: string,
-        private authToken: string,
+        private authToken: string = '',
         retryInterval = 5000
       ) {
         super(url, retryInterval);
@@ -26,16 +22,11 @@ export class BrowserWebSocketClientAdapter extends BaseAdapter {
         super.send(message as any);
     }
 
-    async whenReady(): Promise<void> {
-        return this.#authPromise;
-    }
-
     receiveMessage(messageBytes: Uint8Array): void {
         const message: FromServerMessage = cbor.decode(new Uint8Array(messageBytes));
         if (messageBytes.byteLength === 0)
             throw new Error("received a zero-length message")
         if (isAuthResultMessage(message)) {
-            this.#authResolver?.();
             return;
         }
         super.receiveMessage(messageBytes);
@@ -43,9 +34,16 @@ export class BrowserWebSocketClientAdapter extends BaseAdapter {
 
     join(): void {
         super.join();
-        setTimeout(() => {
-            this.authenticate();
-        });
+        if ( this.authToken !== '' ) {
+            setTimeout(() => {
+                this.authenticate();
+            });
+        }
+    }
+
+    setAuthToken(authToken: string): void {
+        this.authToken = authToken;
+        this.authenticate();
     }
 }
 
