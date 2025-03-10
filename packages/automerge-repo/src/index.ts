@@ -36,6 +36,8 @@ export {
   generateAutomergeUrl,
 } from "./AutomergeUrl.js"
 export { Repo } from "./Repo.js"
+export { CappedRepo } from "./CappedRepo.js"
+export { ProxyRepo } from "./ProxyRepo.js"
 export { NetworkAdapter } from "./network/NetworkAdapter.js"
 export type { NetworkAdapterInterface } from "./network/NetworkAdapterInterface.js"
 export { isRepoMessage } from "./network/messages.js"

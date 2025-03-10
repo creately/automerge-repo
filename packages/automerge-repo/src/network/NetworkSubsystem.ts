@@ -4,6 +4,7 @@ import { PeerId, SessionId } from "../types.js"
 import type {
   NetworkAdapterInterface,
   PeerDisconnectedPayload,
+  PeerLeftPayload,
   PeerMetadata,
 } from "./NetworkAdapterInterface.js"
 import {
@@ -178,6 +179,7 @@ function randomPeerId() {
 export interface NetworkSubsystemEvents {
   peer: (payload: PeerPayload) => void
   "peer-disconnected": (payload: PeerDisconnectedPayload) => void
+  "peer-left": (payload: PeerLeftPayload) => void
   message: (payload: RepoMessage) => void
   ready: () => void
 }

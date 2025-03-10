@@ -119,7 +119,8 @@ export class CollectionSynchronizer extends Synchronizer {
   // TODO: implement this
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   removeDocument(documentId: DocumentId) {
-    throw new Error("not implemented")
+    this.#docSetUp[documentId] = false
+    delete this.#docSynchronizers[documentId];
   }
 
   /** Adds a peer and maybe starts synchronizing with them */
@@ -140,11 +141,15 @@ export class CollectionSynchronizer extends Synchronizer {
   }
 
   /** Removes a peer and stops synchronizing with them */
-  removePeer(peerId: PeerId) {
+  removePeer(peerId: PeerId, documentId?: DocumentId) {
     log(`removing peer ${peerId}`)
     this.#peers.delete(peerId)
+    let docSynchronizers = Object.values(this.#docSynchronizers);
+    if (documentId) {
+      docSynchronizers = [this.#docSynchronizers[documentId]];
+    }
 
-    for (const docSynchronizer of Object.values(this.#docSynchronizers)) {
+    for (const docSynchronizer of docSynchronizers) {
       docSynchronizer.endSync(peerId)
     }
   }

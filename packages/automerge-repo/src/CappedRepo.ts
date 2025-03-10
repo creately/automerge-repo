@@ -22,6 +22,8 @@ import { StorageId } from "./storage/types.js"
 import { CollectionSynchronizer } from "./synchronizer/CollectionSynchronizer.js"
 import { SyncStatePayload } from "./synchronizer/Synchronizer.js"
 import type { AnyDocumentId, DocumentId, PeerId } from "./types.js"
+import { Repo } from "./Repo.js"
+import { LRUCache } from "lru-cache"
 
 /** A Repo is a collection of documents with networking, syncing, and storage capabilities. */
 /** The `Repo` is the main entry point of this library
@@ -31,7 +33,7 @@ import type { AnyDocumentId, DocumentId, PeerId } from "./types.js"
  * more {@link NetworkAdapter}s. Once you have a `Repo` you can use it to
  * obtain {@link DocHandle}s.
  */
-export class Repo extends EventEmitter<RepoEvents> {
+export class CappedRepo<X = any> extends EventEmitter<RepoEvents> {
   #log: debug.Debugger
 
   /** @hidden */
@@ -43,7 +45,7 @@ export class Repo extends EventEmitter<RepoEvents> {
   /** @hidden */
   saveDebounceRate = 100
 
-  #handleCache: Record<DocumentId, DocHandle<any>> = {}
+  #handleCache: LRUCache<DocumentId, DocHandle<any>>;
 
   #synchronizer: CollectionSynchronizer
 
@@ -65,11 +67,22 @@ export class Repo extends EventEmitter<RepoEvents> {
     sharePolicy,
     isEphemeral = storage === undefined,
     enableRemoteHeadsGossiping = false,
+    cachingOptions = { max: 1000 },
   }: RepoConfig = {}) {
     super()
     this.#remoteHeadsGossipingEnabled = enableRemoteHeadsGossiping
     this.#log = debug(`automerge-repo:repo`)
     this.sharePolicy = sharePolicy ?? this.sharePolicy
+    const defaultCachingOptions = {
+      max: 1000,
+      /* dispose: (key, handle) => {
+        // handle.dispose()  // this is a noop if the handle is already disposed
+      }, */
+    }
+    this.#handleCache = new LRUCache<DocumentId, DocHandle<X>>({
+      ...defaultCachingOptions,
+      ...cachingOptions,
+    });
 
     // DOC COLLECTION
 
@@ -136,7 +149,7 @@ export class Repo extends EventEmitter<RepoEvents> {
 
     // SYNCHRONIZER
     // The synchronizer uses the network subsystem to keep documents in sync with peers.
-    this.#synchronizer = new CollectionSynchronizer(this)
+    this.#synchronizer = new CollectionSynchronizer(this as unknown as Repo)
 
     // When the synchronizer emits messages, send them to peers
     this.#synchronizer.on("message", message => {
@@ -210,7 +223,7 @@ export class Repo extends EventEmitter<RepoEvents> {
     this.#synchronizer.on("sync-state", message => {
       this.#saveSyncState(message)
 
-      const handle = this.#handleCache[message.documentId]
+      const handle = this.#handleCache.get(message.documentId)!
 
       const { storageId } = this.peerMetadataByPeerId[message.peerId] || {}
       if (!storageId) {
@@ -263,7 +276,7 @@ export class Repo extends EventEmitter<RepoEvents> {
       })
 
       this.#remoteHeadsSubscriptions.on("remote-heads-changed", message => {
-        const handle = this.#handleCache[message.documentId]
+        const handle = this.#handleCache.get(message.documentId)!
         handle.setRemoteHeads(message.storageId, message.remoteHeads)
       })
     }
@@ -338,12 +351,12 @@ export class Repo extends EventEmitter<RepoEvents> {
     initialValue?: T
   }) {
     // If we have the handle cached, return it
-    if (this.#handleCache[documentId]) return this.#handleCache[documentId]
+    if (this.#handleCache.has(documentId)) return this.#handleCache.get(documentId)!
 
     // If not, create a new handle, cache it, and return it
     if (!documentId) throw new Error(`Invalid documentId ${documentId}`)
     const handle = new DocHandle<T>(documentId, { isNew, initialValue })
-    this.#handleCache[documentId] = handle
+    this.#handleCache.set(documentId, handle)
     return handle
   }
 
@@ -420,23 +433,23 @@ export class Repo extends EventEmitter<RepoEvents> {
    * Retrieves a document by id. It gets data from the local system, but also emits a `document`
    * event to advertise interest in the document.
    */
-  find<T>(
+  find<T = X>(
     /** The url or documentId of the handle to retrieve */
     id: AnyDocumentId
   ): DocHandle<T> {
     const documentId = interpretAsDocumentId(id)
 
     // If we have the handle cached, return it
-    if (this.#handleCache[documentId]) {
-      if (this.#handleCache[documentId].isUnavailable()) {
+    if (this.#handleCache.has(documentId)) {
+      if (this.#handleCache.get(documentId)!.isUnavailable()) {
         // this ensures that the event fires after the handle has been returned
         setTimeout(() => {
-          this.#handleCache[documentId].emit("unavailable", {
-            handle: this.#handleCache[documentId],
+          this.#handleCache.get(documentId)!.emit("unavailable", {
+            handle: this.#handleCache.get(documentId)!,
           })
         })
       }
-      return this.#handleCache[documentId]
+      return this.#handleCache.get(documentId)!
     }
 
     const handle = this.#getHandle<T>({
@@ -456,7 +469,7 @@ export class Repo extends EventEmitter<RepoEvents> {
     const handle = this.#getHandle({ documentId, isNew: false })
     handle.delete()
 
-    delete this.#handleCache[documentId]
+    this.#handleCache.delete(documentId)
     this.emit("delete-document", { documentId })
   }
 
@@ -524,7 +537,7 @@ export class Repo extends EventEmitter<RepoEvents> {
   }
 
   releaseDoc(docId: DocumentId) {
-    delete this.#handleCache[docId]
+    this.#handleCache.delete(docId)
     this.#synchronizer.removeDocument(docId)
     // should we remove from storage. if the storage is shared this can lead to problems
   }
@@ -540,8 +553,8 @@ export class Repo extends EventEmitter<RepoEvents> {
       return
     }
     const handles = documents
-      ? documents.map(id => this.#handleCache[id])
-      : Object.values(this.#handleCache)
+      ? documents.map(id => this.#handleCache.get(id)!)
+      : Array.from(this.#handleCache.values())
     await Promise.all(
       handles.map(async handle => {
         const doc = handle.docSync()
@@ -577,7 +590,8 @@ export interface RepoConfig {
   /**
    * Whether to enable the experimental remote heads gossiping feature
    */
-  enableRemoteHeadsGossiping?: boolean
+  enableRemoteHeadsGossiping?: boolean,
+  cachingOptions?: any,
 }
 
 /** A function that determines whether we should share a document with a peer
