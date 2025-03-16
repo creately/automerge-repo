@@ -73,6 +73,10 @@ export class CollectionSynchronizer extends Synchronizer {
 
   // PUBLIC
 
+  getDocumentSyncState(documentId: DocumentId, peerId: PeerId) {
+    return this.#fetchDocSynchronizer( documentId ).getSyncState(peerId)
+  }
+
   /**
    * When we receive a sync message for a document we haven't got in memory, we
    * register it with the repo and start synchronizing

@@ -9,7 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@automerge/automerge-repo": "workspace:*",
+    "@creately/automerge-repo": "workspace:*",
     "@automerge/automerge-repo-network-broadcastchannel": "workspace:*",
     "@automerge/automerge-repo-react-hooks": "workspace:*",
     "@automerge/automerge-repo-storage-indexeddb": "workspace:*",

@@ -15,7 +15,7 @@
     "svelte": "^3.0.0 || ^4.0.0"
   },
   "dependencies": {
-    "@automerge/automerge-repo": "workspace:*"
+    "@creately/automerge-repo": "workspace:*"
   },
   "watch": {
     "build": {

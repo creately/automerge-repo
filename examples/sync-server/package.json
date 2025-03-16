@@ -11,7 +11,7 @@
   },
   "bin": "./src/index.js",
   "dependencies": {
-    "@automerge/automerge-repo": "workspace:*",
+    "@creately/automerge-repo": "workspace:*",
     "@creately/automerge-repo-network-websocket": "workspace:*",
     "@automerge/automerge-repo-storage-nodefs": "workspace:*",
     "express": "^4.18.1",

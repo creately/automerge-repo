@@ -222,6 +222,15 @@ export class DocSynchronizer extends Synchronizer {
 
   /// PUBLIC
 
+  getSyncState(peerId: PeerId) {
+    if (this.#syncStates[peerId]) {
+      return this.#syncStates[peerId];
+    }
+    return new Promise( res => {
+      this.#withSyncState(peerId, res);
+    }) as Promise<A.SyncState>;
+  }
+
   hasPeer(peerId: PeerId) {
     return this.#peers.includes(peerId)
   }

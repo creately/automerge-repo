@@ -153,7 +153,7 @@ RepoContext. We also create a document and store its `documentId` in localStorag
 import React from "react"
 import ReactDOM from "react-dom/client"
 import App from "./App.js"
-import { Repo } from "@automerge/automerge-repo"
+import { Repo } from "@creately/automerge-repo"
 import { BroadcastChannelNetworkAdapter } from "@automerge/automerge-repo-network-broadcastchannel"
 import { IndexedDBStorageAdapter } from "@automerge/automerge-repo-storage-indexeddb"
 import { RepoContext } from "@automerge/automerge-repo-react-hooks"
@@ -184,7 +184,7 @@ the document to render a button that increments the count.
 ```tsx
 // App.tsx
 import { useDocument } from "@automerge/automerge-repo-react-hooks"
-import { DocumentId } from "@automerge/automerge-repo"
+import { DocumentId } from "@creately/automerge-repo"
 
 interface Doc {
   count: number

@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@automerge/automerge": "^2.2.5",
-    "@automerge/automerge-repo": "^1.2.1",
+    "@creately/automerge-repo": "^1.2.1",
     "@automerge/automerge-repo-network-broadcastchannel": "^1.2.1",
     "@creately/automerge-repo-network-websocket": "^1.2.1",
     "@automerge/automerge-repo-react-hooks": "^1.2.1",

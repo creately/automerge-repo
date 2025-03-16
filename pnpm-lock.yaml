@@ -119,9 +119,6 @@ importers:
       '@automerge/automerge':
         specifier: ^2.2.5
         version: 2.2.5
-      '@automerge/automerge-repo':
-        specifier: workspace:*
-        version: link:../../packages/automerge-repo
       '@automerge/automerge-repo-network-messagechannel':
         specifier: workspace:*
         version: link:../../packages/automerge-repo-network-messagechannel
@@ -131,6 +128,9 @@ importers:
       '@automerge/automerge-repo-storage-indexeddb':
         specifier: workspace:*
         version: link:../../packages/automerge-repo-storage-indexeddb
+      '@creately/automerge-repo':
+        specifier: workspace:*
+        version: link:../../packages/automerge-repo
       '@creately/automerge-repo-network-websocket':
         specifier: workspace:*
         version: link:../../packages/automerge-repo-network-websocket
@@ -146,9 +146,6 @@ importers:
       '@automerge/automerge':
         specifier: ^2.2.5
         version: 2.2.5
-      '@automerge/automerge-repo':
-        specifier: workspace:*
-        version: link:../../packages/automerge-repo
       '@automerge/automerge-repo-network-broadcastchannel':
         specifier: workspace:*
         version: link:../../packages/automerge-repo-network-broadcastchannel
@@ -158,6 +155,9 @@ importers:
       '@automerge/automerge-repo-storage-indexeddb':
         specifier: workspace:*
         version: link:../../packages/automerge-repo-storage-indexeddb
+      '@creately/automerge-repo':
+        specifier: workspace:*
+        version: link:../../packages/automerge-repo
       '@creately/automerge-repo-network-websocket':
         specifier: workspace:*
         version: link:../../packages/automerge-repo-network-websocket
@@ -186,9 +186,6 @@ importers:
 
   examples/react-use-awareness:
     dependencies:
-      '@automerge/automerge-repo':
-        specifier: workspace:*
-        version: link:../../packages/automerge-repo
       '@automerge/automerge-repo-network-broadcastchannel':
         specifier: workspace:*
         version: link:../../packages/automerge-repo-network-broadcastchannel
@@ -198,6 +195,9 @@ importers:
       '@automerge/automerge-repo-storage-indexeddb':
         specifier: workspace:*
         version: link:../../packages/automerge-repo-storage-indexeddb
+      '@creately/automerge-repo':
+        specifier: workspace:*
+        version: link:../../packages/automerge-repo
       eventemitter3:
         specifier: ^5.0.1
         version: 5.0.1
@@ -223,9 +223,6 @@ importers:
       '@automerge/automerge':
         specifier: ^2.2.5
         version: 2.2.5
-      '@automerge/automerge-repo':
-        specifier: workspace:*
-        version: link:../../packages/automerge-repo
       '@automerge/automerge-repo-network-broadcastchannel':
         specifier: workspace:*
         version: link:../../packages/automerge-repo-network-broadcastchannel
@@ -235,6 +232,9 @@ importers:
       '@automerge/automerge-repo-svelte-store':
         specifier: workspace:*
         version: link:../../packages/automerge-repo-svelte-store
+      '@creately/automerge-repo':
+        specifier: workspace:*
+        version: link:../../packages/automerge-repo
       '@creately/automerge-repo-network-websocket':
         specifier: workspace:*
         version: link:../../packages/automerge-repo-network-websocket
@@ -257,12 +257,12 @@ importers:
 
   examples/sync-server:
     dependencies:
-      '@automerge/automerge-repo':
-        specifier: workspace:*
-        version: link:../../packages/automerge-repo
       '@automerge/automerge-repo-storage-nodefs':
         specifier: workspace:*
         version: link:../../packages/automerge-repo-storage-nodefs
+      '@creately/automerge-repo':
+        specifier: workspace:*
+        version: link:../../packages/automerge-repo
       '@creately/automerge-repo-network-websocket':
         specifier: workspace:*
         version: link:../../packages/automerge-repo-network-websocket
@@ -280,8 +280,8 @@ importers:
   packages/automerge-repo:
     dependencies:
       '@automerge/automerge':
-        specifier: ^2.2.5
-        version: 2.2.5
+        specifier: ^2.2.8
+        version: 2.2.8
       bs58check:
         specifier: ^3.0.1
         version: 3.0.1
@@ -322,13 +322,13 @@ importers:
 
   packages/automerge-repo-network-broadcastchannel:
     dependencies:
-      '@automerge/automerge-repo':
+      '@creately/automerge-repo':
         specifier: workspace:*
         version: link:../automerge-repo
 
   packages/automerge-repo-network-messagechannel:
     dependencies:
-      '@automerge/automerge-repo':
+      '@creately/automerge-repo':
         specifier: workspace:*
         version: link:../automerge-repo
       debug:
@@ -340,7 +340,7 @@ importers:
 
   packages/automerge-repo-network-websocket:
     dependencies:
-      '@automerge/automerge-repo':
+      '@creately/automerge-repo':
         specifier: workspace:*
         version: link:../automerge-repo
       cbor-x:
@@ -364,7 +364,7 @@ importers:
       '@automerge/automerge':
         specifier: ^2.2.5
         version: 2.2.5
-      '@automerge/automerge-repo':
+      '@creately/automerge-repo':
         specifier: workspace:*
         version: link:../automerge-repo
       eventemitter3:
@@ -395,13 +395,13 @@ importers:
 
   packages/automerge-repo-storage-indexeddb:
     dependencies:
-      '@automerge/automerge-repo':
+      '@creately/automerge-repo':
         specifier: workspace:*
         version: link:../automerge-repo
 
   packages/automerge-repo-storage-nodefs:
     dependencies:
-      '@automerge/automerge-repo':
+      '@creately/automerge-repo':
         specifier: workspace:*
         version: link:../automerge-repo
       rimraf:
@@ -413,7 +413,7 @@ importers:
       '@automerge/automerge':
         specifier: ^2.2.5
         version: 2.2.5
-      '@automerge/automerge-repo':
+      '@creately/automerge-repo':
         specifier: workspace:*
         version: link:../automerge-repo
       svelte:
@@ -440,6 +440,9 @@ packages:
 
   '@automerge/automerge@2.2.5':
     resolution: {integrity: sha512-ckew+wwjSJwjRwMnf8vqzhThykp0gyUNqKv2b7dLoLb0mfQyPEFaemrsUiHh9WdX73jrH5eXsqqPJK4/yqpviQ==}
+
+  '@automerge/automerge@2.2.8':
+    resolution: {integrity: sha512-kP6Z9lIkNeIGe/jhF8SUQAgUMwVjtXCBL0eZEgQGCoWvPNTPcg8fnQco28XkYBrfkkuqiEUAbdHhJmSp0y79ug==}
 
   '@babel/code-frame@7.24.7':
     resolution: {integrity: sha512-BcYH1CVJBO9tvyIZ2jVeXgSIMvGZ2FDRvDdOIVQyuklNKSsx+eppDEBq/g47Ayw+RqNFE+URvOShmf+f/qwAlA==}
@@ -5782,6 +5785,10 @@ snapshots:
       '@jridgewell/trace-mapping': 0.3.25
 
   '@automerge/automerge@2.2.5':
+    dependencies:
+      uuid: 9.0.1
+
+  '@automerge/automerge@2.2.8':
     dependencies:
       uuid: 9.0.1
 

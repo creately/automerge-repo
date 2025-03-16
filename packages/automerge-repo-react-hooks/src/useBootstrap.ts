@@ -7,7 +7,7 @@ import {
   DocHandle,
   Repo,
   type AutomergeUrl,
-} from "@automerge/automerge-repo/slim"
+} from "@creately/automerge-repo/slim"
 import { useEffect, useState, useMemo } from "react"
 import { useRepo } from "./useRepo.js"
 

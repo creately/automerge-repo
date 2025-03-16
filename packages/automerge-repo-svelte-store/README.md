@@ -8,7 +8,7 @@ For a working example, see the [Svelte counter demo](../automerge-repo-demo-coun
 
 ```svelte
 <script lang="ts">
-  import { Repo } from "@automerge/automerge-repo"
+  import { Repo } from "@creately/automerge-repo"
   import Counter from './lib/Counter.svelte'
   import { setContextRepo } from "@automerge/automerge-repo-svelte-store"
 
@@ -31,7 +31,7 @@ For a working example, see the [Svelte counter demo](../automerge-repo-demo-coun
 
 ```svelte
 <script lang="ts">
-  import type { DocumentId } from "@automerge/automerge-repo"
+  import type { DocumentId } from "@creately/automerge-repo"
   import { document } from "@automerge/automerge-repo-svelte-store"
 
   export let docId: DocumentId

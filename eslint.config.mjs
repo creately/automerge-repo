@@ -41,7 +41,7 @@ const automergeSlimImportRule = {
         }
 
         let isAutomergeRepoProblem = false
-        if (node.source.value === "@automerge/automerge-repo") {
+        if (node.source.value === "@creately/automerge-repo") {
           isAutomergeRepoProblem = true
         } else if (
           node.source.value.startsWith("@automerge/automerge-repo/") &&

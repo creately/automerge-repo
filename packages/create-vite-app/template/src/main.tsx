@@ -1,4 +1,4 @@
-import { isValidAutomergeUrl, Repo, Counter } from "@automerge/automerge-repo"
+import { isValidAutomergeUrl, Repo, Counter } from "@creately/automerge-repo"
 import { BrowserWebSocketClientAdapter } from "@creately/automerge-repo-network-websocket"
 import { BroadcastChannelNetworkAdapter } from "@automerge/automerge-repo-network-broadcastchannel"
 import { IndexedDBStorageAdapter } from "@automerge/automerge-repo-storage-indexeddb"

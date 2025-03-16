@@ -1,4 +1,4 @@
-import { next as Automerge } from "@automerge/automerge/slim"
+import { next as Automerge, SyncMessage } from "@automerge/automerge/slim"
 import debug from "debug"
 import { EventEmitter } from "eventemitter3"
 import {
@@ -355,6 +355,45 @@ export class Repo extends EventEmitter<RepoEvents> {
   /** Returns a list of all connected peer ids */
   get peers(): PeerId[] {
     return this.#synchronizer.peers
+  }
+
+  async getDocumentSyncState(documentId: DocumentId, peerId: PeerId) {
+    if (!this.#handleCache[documentId]) {
+      throw new Error("document not loaded")
+    }
+    return this.#synchronizer.getDocumentSyncState(documentId, peerId)
+  }
+
+  async getDocodedChanges(syncMessage: SyncMessage, documentId: DocumentId, peerId: PeerId) {
+    const decodedSyncMessage = Automerge.decodeSyncMessage(syncMessage);
+    try {
+      return decodedSyncMessage.changes.map(Automerge.decodeChange);
+    } catch (error) {
+      if (!this.#handleCache[documentId]) {
+        throw new Error("document not loaded")
+      }
+      const doc = this.#handleCache[documentId].docSync()!;
+      const cloned = Automerge.clone(doc);
+      const syncState = await this.#synchronizer.getDocumentSyncState(documentId, peerId);
+      const [doc1] = Automerge.receiveSyncMessage(cloned, syncState, syncMessage);
+      return Automerge.getChanges(doc, doc1).map(Automerge.decodeChange);
+    }
+  }
+
+  /**
+   * dry apply a sync message ang get the new state
+   * @param message SyncMessage from a peer
+   * @returns 
+   */
+  async dryApplySyncMessage(message: any) {
+    const documentId: DocumentId = message.documentId;
+    const syncState = await this.#synchronizer.getDocumentSyncState(documentId, message.senderId);
+    const doc = Automerge.clone(this.#handleCache[documentId].docSync()!);
+    const result = Automerge.receiveSyncMessage(doc, syncState, message.data);
+    return {
+      oldState: syncState,
+      result,
+    };
   }
 
   getStorageIdOfPeer(peerId: PeerId): StorageId | undefined {

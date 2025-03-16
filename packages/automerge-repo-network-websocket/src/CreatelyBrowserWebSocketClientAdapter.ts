@@ -1,5 +1,5 @@
 import { BrowserWebSocketClientAdapter as BaseAdapter } from './BrowserWebSocketClientAdapter.js';
-import { cbor, PeerId } from '@automerge/automerge-repo/slim';
+import { cbor, PeerId } from '@creately/automerge-repo/slim';
 import { AuthMessage, CreatelyFromClientMessage, CreatelyFromServerMessage, isAuthResultMessage } from './messages.js';
 
 export class BrowserWebSocketClientAdapter extends BaseAdapter {

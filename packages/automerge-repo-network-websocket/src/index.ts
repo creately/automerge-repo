@@ -13,7 +13,9 @@
  * @module
  * */
 export { BrowserWebSocketClientAdapter } from "./CreatelyBrowserWebSocketClientAdapter.js"
+export { BrowserWebSocketClientAdapter as BaseBrowserWebSocketClientAdapter } from "./BrowserWebSocketClientAdapter.js"
 export { NodeWSServerAdapter } from "./CreatelyNodeWSServerAdapter.js"
+export { NodeWSServerAdapter as BaseNodeWSServerAdapter } from "./NodeWSServerAdapter.js"
 export type {
   CreatelyFromClientMessage as FromClientMessage,
   CreatelyFromServerMessage as FromServerMessage,

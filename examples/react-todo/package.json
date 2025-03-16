@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@automerge/automerge": "^2.2.5",
-    "@automerge/automerge-repo": "workspace:*",
+    "@creately/automerge-repo": "workspace:*",
     "@automerge/automerge-repo-network-broadcastchannel": "workspace:*",
     "@creately/automerge-repo-network-websocket": "workspace:*",
     "@automerge/automerge-repo-react-hooks": "workspace:*",

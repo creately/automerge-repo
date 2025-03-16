@@ -7,7 +7,7 @@ import {
     Message,
     RequestMessage,
     SyncMessage
-} from "@automerge/automerge-repo/slim";
+} from "@creately/automerge-repo/slim";
 
 export type MessageHandler<X, M = Message> = (
     message: M,
@@ -114,8 +114,10 @@ export class NodeWSServerAdapter<T> extends BaseAdapter {
         socket.authenticated = false;
         socket.peerId = message.senderId;
         try {
-            const payload = await this.userIdentityResolver(message.authToken);
+            socket.authenticating = this.userIdentityResolver(message.authToken);
+            const payload = await socket.authenticating;
             socket.authenticated = !!payload;
+            delete socket.authenticating;
             if ( payload ) {
                 this.peerIdentity[message.senderId] = payload;
             }
@@ -143,5 +145,6 @@ export class NodeWSServerAdapter<T> extends BaseAdapter {
 
 export interface WebSocketWithIdentity extends WebSocket {
     authenticated: boolean;
+    authenticating?: Promise<any>;
     peerId: PeerId;
 }

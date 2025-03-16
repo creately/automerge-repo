@@ -9,7 +9,7 @@ import {
   NetworkAdapter,
   type PeerMetadata,
   type PeerId,
-} from "@automerge/automerge-repo/slim"
+} from "@creately/automerge-repo/slim"
 import {
   FromClientMessage,
   FromServerMessage,

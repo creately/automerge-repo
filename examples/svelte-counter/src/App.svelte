@@ -8,7 +8,7 @@
     Counter as AutomergeCounter,
     Repo,
     isValidAutomergeUrl,
-  } from "@automerge/automerge-repo"
+  } from "@creately/automerge-repo"
   import { BroadcastChannelNetworkAdapter } from "@automerge/automerge-repo-network-broadcastchannel"
   import { IndexedDBStorageAdapter } from "@automerge/automerge-repo-storage-indexeddb"
   import { BrowserWebSocketClientAdapter } from "@creately/automerge-repo-network-websocket"
