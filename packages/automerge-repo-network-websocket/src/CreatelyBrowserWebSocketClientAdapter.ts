@@ -45,6 +45,10 @@ export class BrowserWebSocketClientAdapter extends BaseAdapter {
         this.authToken = authToken;
         this.authenticate();
     }
+
+    disconnect(): void {
+        super.disconnect(true);
+    }
 }
 
 function authenticateMessage(
