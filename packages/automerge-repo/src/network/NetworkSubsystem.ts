@@ -40,6 +40,10 @@ export class NetworkSubsystem extends EventEmitter<NetworkSubsystemEvents> {
     adapters.forEach(a => this.addNetworkAdapter(a))
   }
 
+  get adapters() {
+    return this.#adapters
+  }
+
   addNetworkAdapter(networkAdapter: NetworkAdapterInterface) {
     this.#adapters.push(networkAdapter)
     networkAdapter.once("ready", () => {

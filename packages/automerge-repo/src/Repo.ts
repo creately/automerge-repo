@@ -591,6 +591,12 @@ export class Repo extends EventEmitter<RepoEvents> {
       })
     )
   }
+  shutdown(): Promise<void> {
+    this.networkSubsystem.adapters.forEach(adapter => {
+      adapter.disconnect()
+    })
+    return this.flush()
+  }
 }
 
 export interface RepoConfig {
