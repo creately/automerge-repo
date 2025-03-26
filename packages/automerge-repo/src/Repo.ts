@@ -1,4 +1,4 @@
-import { next as Automerge, SyncMessage } from "@automerge/automerge/slim"
+import { next as Automerge, change, DecodedChange, DecodedSyncMessage, Patch, SyncMessage } from "@automerge/automerge/slim"
 import debug from "debug"
 import { EventEmitter } from "eventemitter3"
 import {
@@ -364,20 +364,37 @@ export class Repo extends EventEmitter<RepoEvents> {
     return this.#synchronizer.getDocumentSyncState(documentId, peerId)
   }
 
-  async getDocodedChanges(syncMessage: SyncMessage, documentId: DocumentId, peerId: PeerId) {
+  async getPatches(syncMsg: any): Promise<Omit<DecodedSyncMessage, 'changes'> & {
+    changes: DecodedChange[]
+    patches: Patch[]
+  }> {
+    const syncMessage = syncMsg.data as SyncMessage;
+    const documentId = syncMsg.documentId as DocumentId;
+    const peerId = syncMsg.senderId as PeerId;
     const decodedSyncMessage = Automerge.decodeSyncMessage(syncMessage);
+    let changes, patches: Patch[] = [];
+    const doc = this.#handleCache[documentId].docSync()!;
+    const cloned = Automerge.clone(doc);
     try {
-      return decodedSyncMessage.changes.map(Automerge.decodeChange);
+      changes = decodedSyncMessage.changes.map(Automerge.decodeChange);
+      Automerge.applyChanges(cloned, decodedSyncMessage.changes, {
+        patchCallback: _patches => {
+          patches = _patches;
+        }
+      });
     } catch (error) {
       if (!this.#handleCache[documentId]) {
         throw new Error("document not loaded")
       }
-      const doc = this.#handleCache[documentId].docSync()!;
-      const cloned = Automerge.clone(doc);
       const syncState = await this.#synchronizer.getDocumentSyncState(documentId, peerId);
-      const [doc1] = Automerge.receiveSyncMessage(cloned, syncState, syncMessage);
-      return Automerge.getChanges(doc, doc1).map(Automerge.decodeChange);
+      const [doc1] = Automerge.receiveSyncMessage(cloned, syncState, syncMessage, {
+        patchCallback: _patches => {
+          patches = _patches;
+        }
+      });
+      changes = Automerge.getChanges(doc, doc1).map(Automerge.decodeChange)
     }
+    return { ...decodedSyncMessage, changes, patches };
   }
 
   /**
@@ -389,10 +406,16 @@ export class Repo extends EventEmitter<RepoEvents> {
     const documentId: DocumentId = message.documentId;
     const syncState = await this.#synchronizer.getDocumentSyncState(documentId, message.senderId);
     const doc = Automerge.clone(this.#handleCache[documentId].docSync()!);
-    const result = Automerge.receiveSyncMessage(doc, syncState, message.data);
+    let patches: Patch[] = [];
+    const result = Automerge.receiveSyncMessage(doc, syncState, message.data, {
+      patchCallback: _patches => {
+        patches = _patches;
+      },
+    });
     return {
       oldState: syncState,
       result,
+      patches,
     };
   }
 
