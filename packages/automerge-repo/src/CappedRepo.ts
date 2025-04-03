@@ -59,6 +59,7 @@ export class CappedRepo<X = any> extends EventEmitter<RepoEvents> {
 
   #remoteHeadsSubscriptions = new RemoteHeadsSubscriptions()
   #remoteHeadsGossipingEnabled = false
+  defaultDocTimeoutDelay = -1;
 
   constructor({
     storage,
@@ -68,11 +69,15 @@ export class CappedRepo<X = any> extends EventEmitter<RepoEvents> {
     isEphemeral = storage === undefined,
     enableRemoteHeadsGossiping = false,
     cachingOptions = { max: 1000 },
+    docTimeoutDelay = -1,
   }: RepoConfig = {}) {
     super()
     this.#remoteHeadsGossipingEnabled = enableRemoteHeadsGossiping
     this.#log = debug(`automerge-repo:repo`)
     this.sharePolicy = sharePolicy ?? this.sharePolicy
+    if (docTimeoutDelay > 0) {
+      this.defaultDocTimeoutDelay = docTimeoutDelay;
+    }
     const defaultCachingOptions = {
       max: 1000,
       /* dispose: (key, handle) => {
@@ -344,18 +349,23 @@ export class CappedRepo<X = any> extends EventEmitter<RepoEvents> {
     documentId,
     isNew,
     initialValue,
+    timeoutDelay = this.defaultDocTimeoutDelay,
   }: {
     /** The documentId of the handle to look up or create */
     documentId: DocumentId /** If we know we're creating a new document, specify this so we can have access to it immediately */
     isNew: boolean
     initialValue?: T
+    timeoutDelay?: number
   }) {
     // If we have the handle cached, return it
     if (this.#handleCache.has(documentId)) return this.#handleCache.get(documentId)!
 
     // If not, create a new handle, cache it, and return it
     if (!documentId) throw new Error(`Invalid documentId ${documentId}`)
-    const handle = new DocHandle<T>(documentId, { isNew, initialValue })
+      const options = { isNew, initialValue };
+      // timeoutDelay is only set for existing documents
+      if (timeoutDelay > 0 && !isNew) Object.assign(options, { timeoutDelay });
+    const handle = new DocHandle<T>(documentId, options)
     this.#handleCache.set(documentId, handle)
     return handle
   }
@@ -592,6 +602,11 @@ export interface RepoConfig {
    */
   enableRemoteHeadsGossiping?: boolean,
   cachingOptions?: any,
+
+  /**
+   * default DocHandle timeoutDelay in milliseconds
+   */
+  docTimeoutDelay?: number
 }
 
 /** A function that determines whether we should share a document with a peer

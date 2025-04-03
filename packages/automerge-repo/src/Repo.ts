@@ -57,6 +57,7 @@ export class Repo extends EventEmitter<RepoEvents> {
 
   #remoteHeadsSubscriptions = new RemoteHeadsSubscriptions()
   #remoteHeadsGossipingEnabled = false
+  defaultDocTimeoutDelay = -1;
 
   constructor({
     storage,
@@ -65,17 +66,23 @@ export class Repo extends EventEmitter<RepoEvents> {
     sharePolicy,
     isEphemeral = storage === undefined,
     enableRemoteHeadsGossiping = false,
+    docTimeoutDelay = -1,
+    localDocsOnly = false,
   }: RepoConfig = {}) {
     super()
     this.#remoteHeadsGossipingEnabled = enableRemoteHeadsGossiping
     this.#log = debug(`automerge-repo:repo`)
     this.sharePolicy = sharePolicy ?? this.sharePolicy
+    if (docTimeoutDelay > 0) {
+      this.defaultDocTimeoutDelay = docTimeoutDelay;
+    }
 
     // DOC COLLECTION
 
     // The `document` event is fired by the DocCollection any time we create a new document or look
     // up a document by ID. We listen for it in order to wire up storage and network synchronization.
     this.on("document", async ({ handle, isNew }) => {
+      let docFoundLocally = isNew;
       if (storageSubsystem) {
         // Save when the document changes, but no more often than saveDebounceRate.
         const saveFn = ({
@@ -93,6 +100,7 @@ export class Repo extends EventEmitter<RepoEvents> {
           // Try to load from disk
           const loadedDoc = await storageSubsystem.loadDoc(handle.documentId)
           if (loadedDoc) {
+            docFoundLocally = true;
             handle.update(() => loadedDoc)
           }
         }
@@ -105,18 +113,25 @@ export class Repo extends EventEmitter<RepoEvents> {
         })
       })
 
-      if (this.networkSubsystem.isReady()) {
-        handle.request()
-      } else {
-        handle.awaitNetwork()
-        this.networkSubsystem
-          .whenReady()
-          .then(() => {
-            handle.networkReady()
-          })
-          .catch(err => {
-            this.#log("error waiting for network", { err })
-          })
+      if (!localDocsOnly) {
+        if (this.networkSubsystem.isReady()) {
+          handle.request()
+        } else {
+          handle.awaitNetwork()
+          this.networkSubsystem
+            .whenReady()
+            .then(() => {
+              handle.networkReady()
+            })
+            .catch(err => {
+              this.#log("error waiting for network", { err })
+            })
+        }
+      } else if (!docFoundLocally) {
+        // after initializing mark the document as unavailable
+        setImmediate(() => {
+          handle.unavailable()
+        });
       }
 
       // Register the document with the synchronizer. This advertises our interest in the document.
@@ -331,18 +346,23 @@ export class Repo extends EventEmitter<RepoEvents> {
     documentId,
     isNew,
     initialValue,
+    timeoutDelay = this.defaultDocTimeoutDelay,
   }: {
     /** The documentId of the handle to look up or create */
     documentId: DocumentId /** If we know we're creating a new document, specify this so we can have access to it immediately */
     isNew: boolean
     initialValue?: T
+    timeoutDelay?: number
   }) {
     // If we have the handle cached, return it
     if (this.#handleCache[documentId]) return this.#handleCache[documentId]
 
     // If not, create a new handle, cache it, and return it
     if (!documentId) throw new Error(`Invalid documentId ${documentId}`)
-    const handle = new DocHandle<T>(documentId, { isNew, initialValue })
+    const options = { isNew, initialValue };
+    // timeoutDelay is only set for existing documents
+    if (timeoutDelay > 0 && !isNew) Object.assign(options, { timeoutDelay });
+    const handle = new DocHandle<T>(documentId, options)
     this.#handleCache[documentId] = handle
     return handle
   }
@@ -501,10 +521,11 @@ export class Repo extends EventEmitter<RepoEvents> {
       return this.#handleCache[documentId]
     }
 
-    const handle = this.#getHandle<T>({
+    const options = {
       documentId,
       isNew: false,
-    }) as DocHandle<T>
+    };
+    const handle = this.#getHandle<T>(options) as DocHandle<T>
     this.emit("document", { handle, isNew: false })
     return handle
   }
@@ -646,6 +667,17 @@ export interface RepoConfig {
    * Whether to enable the experimental remote heads gossiping feature
    */
   enableRemoteHeadsGossiping?: boolean
+
+  /**
+   * default DocHandle timeoutDelay in milliseconds
+   */
+  docTimeoutDelay?: number,
+
+  /**
+   * Whether to only share documents that are stored locally
+   * if this is true, repo will not try to load docs via network
+   */
+  localDocsOnly?: boolean;
 }
 
 /** A function that determines whether we should share a document with a peer
