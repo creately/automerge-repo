@@ -25,6 +25,9 @@ export class NodeWSServerAdapter<T> extends BaseAdapter {
     peerIdentity: {
         [peerId: PeerId]: T
     } = {};
+    authTokens: {
+        [peerId: PeerId]: string
+    } = {};
 
     private syncMessageHandler: ClientMessageHandler<T, SyncMessage> = (message, socket, ctx, next) => {
         next(message, socket, ctx);
@@ -113,6 +116,7 @@ export class NodeWSServerAdapter<T> extends BaseAdapter {
         }
         socket.authenticated = false;
         socket.peerId = message.senderId;
+        this.authTokens[message.senderId] = message.authToken;
         try {
             socket.authenticating = this.userIdentityResolver(message.authToken);
             const payload = await socket.authenticating;
