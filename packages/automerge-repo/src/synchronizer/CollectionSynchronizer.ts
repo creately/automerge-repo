@@ -150,6 +150,10 @@ export class CollectionSynchronizer extends Synchronizer {
     this.#peers.delete(peerId)
     let docSynchronizers = Object.values(this.#docSynchronizers);
     if (documentId) {
+      if (!this.#docSynchronizers[documentId]) {
+        // ignore if we don't have a synchronizer for this document
+        return;
+      }
       docSynchronizers = [this.#docSynchronizers[documentId]];
     }
 

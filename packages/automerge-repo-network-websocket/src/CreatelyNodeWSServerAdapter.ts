@@ -60,6 +60,9 @@ export class NodeWSServerAdapter<T> extends BaseAdapter {
         if (logger) {
             this.logger = logger;
         }
+        this.on('peer-disconnected', ({ peerId }) => {
+            delete this.peerIdentity[peerId];
+        });
     }
 
     setSyncMessageHandler(handler: ClientMessageHandler<T, SyncMessage>) {

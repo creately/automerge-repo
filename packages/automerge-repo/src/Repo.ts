@@ -1,4 +1,4 @@
-import { next as Automerge, change, DecodedChange, DecodedSyncMessage, Patch, SyncMessage } from "@automerge/automerge/slim"
+import { next as Automerge, DecodedChange, DecodedSyncMessage, Patch, SyncMessage } from "@automerge/automerge/slim"
 import debug from "debug"
 import { EventEmitter } from "eventemitter3"
 import {
