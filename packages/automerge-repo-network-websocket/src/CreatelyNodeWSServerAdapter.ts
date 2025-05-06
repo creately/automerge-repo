@@ -1,6 +1,6 @@
 import { NodeWSServerAdapter as BaseAdapter } from './NodeWSServerAdapter.js';
-import { WebSocket, type WebSocketServer } from "isomorphic-ws";
-import { AuthMessage, CreatelyFromClientMessage, CreatelyFromServerMessage, isAuthMessage } from './messages.js';
+import WebSocket, { type WebSocketServer } from "isomorphic-ws";
+import { AuthMessage, CreatelyFromClientMessage, isAuthMessage } from './messages.js';
 
 import {
     PeerId,
