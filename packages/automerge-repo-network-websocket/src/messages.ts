@@ -60,7 +60,7 @@ export type FromServerMessage = PeerMessage | ErrorMessage | Message
 export type CreatelyFromClientMessage = FromClientMessage | AuthMessage
 
 /** A message from the server to the client */
-export type CreatelyFromServerMessage = FromServerMessage | AuthResultMessage
+export type CreatelyFromServerMessage = FromServerMessage | AuthResultMessage | ConnectionClosedMessage
 
 // TYPE GUARDS
 
@@ -90,14 +90,22 @@ export type AuthMessage = {
 }
 
 export type AuthResultMessage = {
-    type: "auth_result";    /** The PeerID of the client */
-    success: boolean;
+  type: "auth_result";    /** The PeerID of the client */
+  success: boolean;
+}
+
+export type ConnectionClosedMessage = {
+  type: "connection_removed";
 }
 
 export const isAuthMessage = (
-    message: CreatelyFromClientMessage
+  message: CreatelyFromClientMessage
 ): message is AuthMessage => message.type === "auth"
 
 export const isAuthResultMessage = (
-    message: CreatelyFromServerMessage
+  message: CreatelyFromServerMessage
 ): message is AuthResultMessage => message.type === "auth_result"
+
+export const isConnectionClosedMessage = (
+  message: CreatelyFromServerMessage
+): message is ConnectionClosedMessage => message.type === "connection_removed"

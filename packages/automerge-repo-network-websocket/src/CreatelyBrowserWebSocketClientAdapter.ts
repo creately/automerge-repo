@@ -1,13 +1,19 @@
 import { BrowserWebSocketClientAdapter as BaseAdapter } from './BrowserWebSocketClientAdapter.js';
-import { cbor, PeerId } from '@creately/automerge-repo/slim';
-import { AuthMessage, CreatelyFromClientMessage, CreatelyFromServerMessage, isAuthResultMessage } from './messages.js';
+import { cbor, PeerId, PeerMetadata } from '@creately/automerge-repo/slim';
+import { AuthMessage, CreatelyFromClientMessage, CreatelyFromServerMessage, isAuthResultMessage, isConnectionClosedMessage } from './messages.js';
 
 export class BrowserWebSocketClientAdapter extends BaseAdapter {
+
+    #connectRetryCount = 0;
 
     constructor(
         url: string,
         private authToken: string = '',
-        retryInterval = 5000
+        retryInterval = 5000,
+        private options?: {
+            connectionFailureCallback?: () => void;
+            connectionClosedCallback?: () => void;
+        }
       ) {
         super(url, retryInterval);
       }
@@ -27,6 +33,13 @@ export class BrowserWebSocketClientAdapter extends BaseAdapter {
         if (messageBytes.byteLength === 0)
             throw new Error("received a zero-length message")
         if (isAuthResultMessage(message)) {
+            return;
+        }
+        if (isConnectionClosedMessage(message)) {
+            if (this.options?.connectionClosedCallback) {
+                this.options.connectionClosedCallback();
+            }
+            this.disconnectForcefully();
             return;
         }
         super.receiveMessage(messageBytes);
@@ -49,6 +62,27 @@ export class BrowserWebSocketClientAdapter extends BaseAdapter {
     disconnect(): void {
         super.disconnect(true);
     }
+
+    connect(peerId: PeerId, peerMetadata?: PeerMetadata): void {
+        if (!this.options?.connectionFailureCallback) {
+            super.connect(peerId, peerMetadata);
+            return;
+        }
+        if (this.socket) {
+            this.#connectRetryCount++;
+            this.socket.removeEventListener('open', this.onOpen1);
+        }
+        if (this.#connectRetryCount > 2) { // 2 consecutive retry attempt failures
+            this.options.connectionFailureCallback();
+            return;
+        }
+        super.connect(peerId, peerMetadata);
+        this.socket!.addEventListener('open', this.onOpen1, { once: true });
+    }
+
+    onOpen1 = () => {
+        this.#connectRetryCount = 0;
+    };
 }
 
 function authenticateMessage(

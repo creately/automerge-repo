@@ -1,6 +1,6 @@
 import { NodeWSServerAdapter as BaseAdapter } from './NodeWSServerAdapter.js';
-import { type WebSocketServer, type WebSocket } from "isomorphic-ws";
-import { AuthMessage, CreatelyFromClientMessage, isAuthMessage } from './messages.js';
+import { WebSocket, type WebSocketServer } from "isomorphic-ws";
+import { AuthMessage, CreatelyFromClientMessage, CreatelyFromServerMessage, isAuthMessage } from './messages.js';
 
 import {
     PeerId,
@@ -71,6 +71,17 @@ export class NodeWSServerAdapter<T> extends BaseAdapter {
 
     setRequestMessageHandler(handler: ClientMessageHandler<T, RequestMessage>) {
         this.requestMessageHandler = handler;
+    }
+
+    sendShutdownMessage() {
+        Object.entries(this.sockets).forEach(([targetId, client]) => {
+            if (client.readyState === WebSocket.OPEN) {
+                this.send({
+                    type: "connection_removed",
+                    targetId: targetId as PeerId,
+                } as any);
+            }
+        });
     }
 
     receiveClientMessage(message: CreatelyFromClientMessage, socket: WebSocketWithIdentity): void {
