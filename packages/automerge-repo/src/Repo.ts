@@ -808,6 +808,7 @@ export class Repo extends EventEmitter<RepoEvents> {
   }
 
   /**
+   * FIXME: Don't use this method, https://github.com/automerge/automerge-repo/issues/435
    * Removes a DocHandle from the handleCache.
    * @hidden this API is experimental and may change.
    * @param documentId - documentId of the DocHandle to remove from handleCache, if present in cache.
@@ -843,7 +844,7 @@ export class Repo extends EventEmitter<RepoEvents> {
   }
 
   releaseDoc(docId: DocumentId) {
-    this.removeFromCache(docId)
+    delete this.#handleCache[docId]
     this.synchronizer.removeDocument(docId)
     // should we remove from storage. if the storage is shared this can lead to problems
   }
