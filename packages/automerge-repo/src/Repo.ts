@@ -875,7 +875,7 @@ export class Repo extends EventEmitter<RepoEvents> {
     const peerId = syncMsg.senderId as PeerId;
     const decodedSyncMessage = Automerge.decodeSyncMessage(syncMessage);
     let changes, patches: Patch[] = [];
-    const doc = this.#handleCache[documentId].docSync()!;
+    const doc = this.#handleCache[documentId].doc()!;
     const cloned = Automerge.clone(doc);
     try {
       changes = decodedSyncMessage.changes.map(Automerge.decodeChange);
