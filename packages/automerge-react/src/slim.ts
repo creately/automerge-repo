@@ -1,2 +1,2 @@
-export * from "@automerge/automerge-repo/slim"
+export * from "@creately/automerge-repo/slim"
 export * from "./default-exports.js"

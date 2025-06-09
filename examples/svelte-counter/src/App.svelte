@@ -8,7 +8,7 @@
     Counter as AutomergeCounter,
     isValidAutomergeUrl,
     type AutomergeUrl
-  } from "@automerge/automerge-repo"
+  } from "@creately/automerge-repo"
   
   import { repo } from "./lib/repo"
   import { setContextRepo } from "@automerge/automerge-repo-svelte-store"

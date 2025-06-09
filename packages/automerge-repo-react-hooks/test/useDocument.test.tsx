@@ -2,7 +2,7 @@ import {
   AutomergeUrl,
   Doc,
   generateAutomergeUrl,
-} from "@automerge/automerge-repo"
+} from "@creately/automerge-repo"
 import { render, screen, waitFor } from "@testing-library/react"
 import React, { Suspense } from "react"
 import { describe, expect, it, vi } from "vitest"

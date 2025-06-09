@@ -12,12 +12,12 @@ self.addEventListener("connect", (e: MessageEvent) => {
 // even if the event arrives first.
 // Ideally Chrome would fix this upstream but this isn't a terrible hack.
 const repoPromise = (async () => {
-  const { Repo } = await import("@automerge/automerge-repo")
+  const { Repo } = await import("@creately/automerge-repo")
   const { IndexedDBStorageAdapter } = await import(
     "@automerge/automerge-repo-storage-indexeddb"
   )
   const { WebSocketClientAdapter } = await import(
-    "@automerge/automerge-repo-network-websocket"
+    "@creately/automerge-repo-network-websocket"
   )
   return new Repo({
     storage: new IndexedDBStorageAdapter(),

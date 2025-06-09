@@ -3,7 +3,7 @@ import {
   PeerId,
   PeerMetadata,
   cbor,
-} from "@automerge/automerge-repo/slim"
+} from "@creately/automerge-repo/slim"
 import WebSocket from "isomorphic-ws"
 
 import debug from "debug"

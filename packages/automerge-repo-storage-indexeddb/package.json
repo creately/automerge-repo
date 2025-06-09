@@ -12,7 +12,7 @@
     "watch": "npm-watch build"
   },
   "dependencies": {
-    "@automerge/automerge-repo": "workspace:*"
+    "@creately/automerge-repo": "workspace:*"
   },
   "watch": {
     "build": {

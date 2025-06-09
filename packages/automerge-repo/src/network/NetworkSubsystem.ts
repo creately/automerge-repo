@@ -4,6 +4,7 @@ import { PeerId, SessionId } from "../types.js"
 import type {
   NetworkAdapterInterface,
   PeerDisconnectedPayload,
+  PeerLeftPayload,
   PeerMetadata,
 } from "./NetworkAdapterInterface.js"
 import {
@@ -172,6 +173,7 @@ export class NetworkSubsystem extends EventEmitter<NetworkSubsystemEvents> {
 export interface NetworkSubsystemEvents {
   peer: (payload: PeerPayload) => void
   "peer-disconnected": (payload: PeerDisconnectedPayload) => void
+  "peer-left": (payload: PeerLeftPayload) => void
   message: (payload: RepoMessage) => void
 }
 

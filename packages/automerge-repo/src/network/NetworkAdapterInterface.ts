@@ -1,7 +1,7 @@
 /* c8 ignore start */
 
 import { EventEmitter } from "eventemitter3"
-import { PeerId } from "../types.js"
+import { DocumentId, PeerId } from "../types.js"
 import { Message } from "./messages.js"
 import { StorageId } from "../storage/types.js"
 
@@ -65,6 +65,9 @@ export interface NetworkAdapterEvents {
   /** Emitted when the network adapter learns that a peer has disconnected */
   "peer-disconnected": (payload: PeerDisconnectedPayload) => void
 
+  /** Emitted when the peer no longer subscribed to the document */
+  "peer-left": (payload: PeerLeftPayload) => void
+
   /** Emitted when the network adapter receives a message from a peer */
   message: (payload: Message) => void
 }
@@ -80,4 +83,9 @@ export interface PeerCandidatePayload {
 
 export interface PeerDisconnectedPayload {
   peerId: PeerId
+}
+
+export interface PeerLeftPayload {
+  peerId: PeerId,
+  documentId: DocumentId
 }

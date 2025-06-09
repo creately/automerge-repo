@@ -5,7 +5,7 @@ import type {
   DocHandle,
   DocumentId,
   Repo,
-} from "@automerge/automerge-repo/slim"
+} from "@creately/automerge-repo/slim"
 
 import { getContext, setContext } from "svelte"
 import { writable, type Writable } from "svelte/store"

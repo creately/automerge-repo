@@ -1,5 +1,5 @@
 {
-  "name": "@automerge/automerge-repo",
+  "name": "@creately/automerge-repo",
   "version": "2.0.1",
   "description": "A repository object to manage a collection of automerge documents",
   "repository": "https://github.com/automerge/automerge-repo/tree/master/packages/automerge-repo",

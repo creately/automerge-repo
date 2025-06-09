@@ -1,6 +1,6 @@
 import React from "react"
 
-import { PeerId, Repo } from "@automerge/automerge-repo"
+import { PeerId, Repo } from "@creately/automerge-repo"
 import "@testing-library/jest-dom"
 import { cleanup } from "@testing-library/react"
 import { afterEach } from "vitest"

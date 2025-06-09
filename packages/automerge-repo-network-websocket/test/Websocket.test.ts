@@ -7,8 +7,8 @@ import {
   Repo,
   SyncMessage,
   parseAutomergeUrl,
-} from "@automerge/automerge-repo"
-import { generateAutomergeUrl } from "@automerge/automerge-repo"
+} from "@creately/automerge-repo"
+import { generateAutomergeUrl } from "@creately/automerge-repo"
 import { eventPromise } from "@automerge/automerge-repo/helpers/eventPromise.js"
 import { headsAreSame } from "@automerge/automerge-repo/helpers/headsAreSame.js"
 import { runNetworkAdapterTests } from "@automerge/automerge-repo/helpers/tests/network-adapter-tests.js"

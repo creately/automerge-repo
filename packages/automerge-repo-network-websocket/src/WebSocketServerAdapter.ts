@@ -9,7 +9,7 @@ import {
   NetworkAdapter,
   type PeerMetadata,
   type PeerId,
-} from "@automerge/automerge-repo/slim"
+} from "@creately/automerge-repo/slim"
 import {
   FromClientMessage,
   FromServerMessage,
@@ -141,6 +141,11 @@ export class WebSocketServerAdapter extends NetworkAdapter {
     const { byteLength } = messageBytes
     log(`[${senderId}->${myPeerId}${documentId}] ${type} | ${byteLength} bytes`)
 
+    this.receiveClientMessage(message, socket)
+  }
+
+  receiveClientMessage(message: FromClientMessage, socket: WebSocket) {
+    const senderId = message.senderId
     if (isJoinMessage(message)) {
       const { peerMetadata, supportedProtocolVersions } = message
       const existingSocket = this.sockets[senderId]

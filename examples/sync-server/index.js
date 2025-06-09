@@ -2,8 +2,8 @@
 import fs from "fs"
 import express from "express"
 import { WebSocketServer } from "ws"
-import { Repo } from "@automerge/automerge-repo"
-import { WebSocketServerAdapter } from "@automerge/automerge-repo-network-websocket"
+import { Repo } from "@creately/automerge-repo"
+import { WebSocketServerAdapter } from "@creately/automerge-repo-network-websocket"
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs"
 import { default as Prometheus } from "prom-client"
 import os from "os"
@@ -64,7 +64,7 @@ export class Server {
     const config = {
       network: [new WebSocketServerAdapter(this.#socket)],
       storage: new NodeFSStorageAdapter(dir),
-      /** @ts-ignore @type {(import("@automerge/automerge-repo").PeerId)}  */
+      /** @ts-ignore @type {(import("@creately/automerge-repo").PeerId)}  */
       peerId: `storage-server-${hostname}`,
       // Since this is a server, we don't share generously — meaning we only sync documents they already
       // know about and can ask for by ID.

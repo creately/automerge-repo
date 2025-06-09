@@ -79,6 +79,10 @@ export class CollectionSynchronizer extends Synchronizer {
 
   // PUBLIC
 
+  getDocumentSyncState(docHandle: DocHandle<unknown>, peerId: PeerId) {
+    return this.#fetchDocSynchronizer( docHandle ).getSyncState(peerId)
+  }
+
   /**
    * When we receive a sync message for a document we haven't got in memory, we
    * register it with the repo and start synchronizing
@@ -141,7 +145,8 @@ export class CollectionSynchronizer extends Synchronizer {
   // TODO: implement this
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   removeDocument(documentId: DocumentId) {
-    throw new Error("not implemented")
+    this.#docSetUp[documentId] = false
+    delete this.docSynchronizers[documentId];
   }
 
   /** Adds a peer and maybe starts synchronizing with them */
@@ -162,11 +167,19 @@ export class CollectionSynchronizer extends Synchronizer {
   }
 
   /** Removes a peer and stops synchronizing with them */
-  removePeer(peerId: PeerId) {
+  removePeer(peerId: PeerId, documentId?: DocumentId) {
     log(`removing peer ${peerId}`)
     this.#peers.delete(peerId)
+    let docSynchronizers = Object.values(this.docSynchronizers);
+    if (documentId) {
+      if (!this.docSynchronizers[documentId]) {
+        // ignore if we don't have a synchronizer for this document
+        return;
+      }
+      docSynchronizers = [this.docSynchronizers[documentId]];
+    }
 
-    for (const docSynchronizer of Object.values(this.docSynchronizers)) {
+    for (const docSynchronizer of docSynchronizers) {
       docSynchronizer.endSync(peerId)
     }
   }

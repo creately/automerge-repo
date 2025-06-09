@@ -1,5 +1,5 @@
 import React, { Suspense } from "react"
-import { AutomergeUrl, Repo, PeerId } from "@automerge/automerge-repo"
+import { AutomergeUrl, Repo, PeerId } from "@creately/automerge-repo"
 import { render, act, waitFor } from "@testing-library/react"
 import { describe, expect, it, vi } from "vitest"
 import { useDocuments } from "../src/useDocuments"

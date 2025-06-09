@@ -1,4 +1,4 @@
-import { next as Automerge } from "@automerge/automerge/slim"
+import { next as Automerge, DecodedChange, DecodedSyncMessage, SyncMessage } from "@automerge/automerge/slim"
 import debug from "debug"
 import { EventEmitter } from "eventemitter3"
 import {
@@ -41,6 +41,7 @@ import type {
 } from "./types.js"
 import { abortable, AbortOptions } from "./helpers/abortable.js"
 import { FindProgress } from "./FindProgress.js"
+import { Patch } from "./index.js"
 
 export type FindProgressWithMethods<T> = FindProgress<T> & {
   untilReady: (allowableStates: string[]) => Promise<DocHandle<T>>
@@ -94,6 +95,8 @@ export class Repo extends EventEmitter<RepoEvents> {
   #remoteHeadsSubscriptions = new RemoteHeadsSubscriptions()
   #remoteHeadsGossipingEnabled = false
   #progressCache: Record<DocumentId, FindProgress<any>> = {}
+  defaultDocTimeoutDelay = -1;
+  localDocsOnly = false;
 
   constructor({
     storage,
@@ -103,11 +106,17 @@ export class Repo extends EventEmitter<RepoEvents> {
     isEphemeral = storage === undefined,
     enableRemoteHeadsGossiping = false,
     denylist = [],
+    docTimeoutDelay = -1,
+    localDocsOnly = false,
   }: RepoConfig = {}) {
     super()
     this.#remoteHeadsGossipingEnabled = enableRemoteHeadsGossiping
     this.#log = debug(`automerge-repo:repo`)
     this.sharePolicy = sharePolicy ?? this.sharePolicy
+    if (docTimeoutDelay > 0) {
+      this.defaultDocTimeoutDelay = docTimeoutDelay;
+    }
+    this.localDocsOnly = localDocsOnly;
 
     this.on("delete-document", ({ documentId }) => {
       // TODO Pass the delete on to the network
@@ -190,6 +199,11 @@ export class Repo extends EventEmitter<RepoEvents> {
     networkSubsystem.on("peer-disconnected", ({ peerId }) => {
       this.synchronizer.removePeer(peerId)
       this.#remoteHeadsSubscriptions.removePeer(peerId)
+    })
+
+    networkSubsystem.on("peer-left", ({ peerId, documentId }) => {
+      this.synchronizer.removePeer(peerId, documentId)
+      // this.#remoteHeadsSubscriptions.removePeer(peerId)
     })
 
     // Handle incoming messages
@@ -339,16 +353,22 @@ export class Repo extends EventEmitter<RepoEvents> {
   /** Returns an existing handle if we have it; creates one otherwise. */
   #getHandle<T>({
     documentId,
+    timeoutDelay = this.defaultDocTimeoutDelay,
   }: {
     /** The documentId of the handle to look up or create */
     documentId: DocumentId /** If we know we're creating a new document, specify this so we can have access to it immediately */
+    timeoutDelay?: number
   }) {
     // If we have the handle cached, return it
     if (this.#handleCache[documentId]) return this.#handleCache[documentId]
 
     // If not, create a new handle, cache it, and return it
     if (!documentId) throw new Error(`Invalid documentId ${documentId}`)
-    const handle = new DocHandle<T>(documentId)
+    const options = {};
+    if (timeoutDelay > 0) {
+      Object.assign(options, { timeoutDelay });
+    }
+    const handle = new DocHandle<T>(documentId, options)
     this.#handleCache[documentId] = handle
     return handle
   }
@@ -378,6 +398,7 @@ export class Repo extends EventEmitter<RepoEvents> {
     const handle = this.#getHandle<T>({
       documentId,
     }) as DocHandle<T>
+    this.emit("document", { handle })
 
     this.#registerHandleWithSubsystems(handle)
 
@@ -481,6 +502,7 @@ export class Repo extends EventEmitter<RepoEvents> {
     }
 
     const handle = this.#getHandle<T>({ documentId })
+    this.emit("document", { handle })
     const initial = {
       state: "loading" as const,
       progress: 0,
@@ -555,13 +577,19 @@ export class Repo extends EventEmitter<RepoEvents> {
           handle,
         })
       } else {
-        await Promise.race([this.networkSubsystem.whenReady(), abortPromise])
-        handle.request()
-        progressSignal.notify({
-          state: "loading" as const,
-          progress: 75,
-          handle,
-        })
+        if (this.localDocsOnly) {
+          setImmediate(() => {
+            handle.unavailable()
+          });
+        } else {
+          await Promise.race([this.networkSubsystem.whenReady(), abortPromise])
+          handle.request()
+          progressSignal.notify({
+            state: "loading" as const,
+            progress: 75,
+            handle,
+          })
+        }
       }
 
       this.#registerHandleWithSubsystems(handle)
@@ -650,11 +678,18 @@ export class Repo extends EventEmitter<RepoEvents> {
       handle.update(() => loadedDoc as Automerge.Doc<T>)
       handle.doneLoading()
     } else {
-      // Because the network subsystem might still be booting up, we wait
-      // here so that we don't immediately give up loading because we're still
-      // making our initial connection to a sync server.
-      await this.networkSubsystem.whenReady()
-      handle.request()
+      if (this.localDocsOnly) {
+        setImmediate(() => {
+          handle.unavailable()
+        });
+
+      } else {
+        // Because the network subsystem might still be booting up, we wait
+        // here so that we don't immediately give up loading because we're still
+        // making our initial connection to a sync server.
+        await this.networkSubsystem.whenReady()
+        handle.request()
+      }
     }
 
     this.#registerHandleWithSubsystems(handle)
@@ -807,6 +842,12 @@ export class Repo extends EventEmitter<RepoEvents> {
     }
   }
 
+  releaseDoc(docId: DocumentId) {
+    this.removeFromCache(docId)
+    this.synchronizer.removeDocument(docId)
+    // should we remove from storage. if the storage is shared this can lead to problems
+  }
+
   shutdown(): Promise<void> {
     this.networkSubsystem.adapters.forEach(adapter => {
       adapter.disconnect()
@@ -816,6 +857,71 @@ export class Repo extends EventEmitter<RepoEvents> {
 
   metrics(): { documents: { [key: string]: any } } {
     return { documents: this.synchronizer.metrics() }
+  }
+
+  async getDocumentSyncState(documentId: DocumentId, peerId: PeerId) {
+    if (!this.#handleCache[documentId]) {
+      throw new Error("document not loaded")
+    }
+    return this.synchronizer.getDocumentSyncState(this.#handleCache[documentId], peerId)
+  }
+
+  async getPatches(syncMsg: any): Promise<Omit<DecodedSyncMessage, 'changes'> & {
+    changes: DecodedChange[]
+    patches: Patch[]
+  }> {
+    const syncMessage = syncMsg.data as SyncMessage;
+    const documentId = syncMsg.documentId as DocumentId;
+    const peerId = syncMsg.senderId as PeerId;
+    const decodedSyncMessage = Automerge.decodeSyncMessage(syncMessage);
+    let changes, patches: Patch[] = [];
+    const doc = this.#handleCache[documentId].docSync()!;
+    const cloned = Automerge.clone(doc);
+    try {
+      changes = decodedSyncMessage.changes.map(Automerge.decodeChange);
+      Automerge.applyChanges(cloned, decodedSyncMessage.changes, {
+        patchCallback: _patches => {
+          patches = _patches;
+        }
+      });
+    } catch (error) {
+      if (!this.#handleCache[documentId]) {
+        throw new Error("document not loaded")
+      }
+      const syncState = await this.synchronizer.getDocumentSyncState(this.#handleCache[documentId], peerId);
+      const [doc1] = Automerge.receiveSyncMessage(cloned, syncState, syncMessage, {
+        patchCallback: _patches => {
+          patches = _patches;
+        }
+      });
+      changes = Automerge.getChanges(doc, doc1).map(Automerge.decodeChange)
+    }
+    return { ...decodedSyncMessage, changes, patches };
+  }
+
+  /**
+   * dry apply a sync message ang get the new state
+   * @param message SyncMessage from a peer
+   * @returns 
+   */
+  async dryApplySyncMessage(message: any) {
+    if (!this.#handleCache[message.documentId]) {
+      throw new Error("document not loaded")
+    }
+    const documentId: DocumentId = message.documentId;
+    const syncState = await this.synchronizer.getDocumentSyncState(this.#handleCache[documentId], message.senderId);
+    const doc = Automerge.clone(this.#handleCache[documentId].doc()!);
+    let patches: Patch[] = [];
+    const result = Automerge.receiveSyncMessage(doc, syncState, message.data, {
+      patchCallback: _patches => {
+        patches = _patches;
+      },
+    });
+    return {
+      oldState: syncState,
+      result,
+      patches,
+    };
   }
 }
 
@@ -850,6 +956,17 @@ export interface RepoConfig {
    * loading documents that are known to be too resource intensive.
    */
   denylist?: AutomergeUrl[]
+
+  /**
+   * default DocHandle timeoutDelay in milliseconds
+   */
+  docTimeoutDelay?: number;
+
+  /**
+   * Whether to only share documents that are stored locally
+   * if this is true, repo will not try to load docs via network
+   */
+  localDocsOnly?: boolean;
 }
 
 /** A function that determines whether we should share a document with a peer

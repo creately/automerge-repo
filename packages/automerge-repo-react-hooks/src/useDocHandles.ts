@@ -1,4 +1,4 @@
-import { AutomergeUrl, DocHandle } from "@automerge/automerge-repo/slim"
+import { AutomergeUrl, DocHandle } from "@creately/automerge-repo/slim"
 import { useState, useEffect } from "react"
 import { useRepo } from "./useRepo.js"
 import { PromiseWrapper, wrapPromise } from "./wrapPromise.js"

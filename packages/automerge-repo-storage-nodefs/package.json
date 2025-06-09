@@ -13,7 +13,7 @@
     "test": "vitest"
   },
   "dependencies": {
-    "@automerge/automerge-repo": "workspace:*",
+    "@creately/automerge-repo": "workspace:*",
     "rimraf": "^5.0.1"
   },
   "watch": {

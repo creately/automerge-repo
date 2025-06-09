@@ -1,4 +1,4 @@
-import type { Counter } from "@automerge/automerge-repo"
+import type { Counter } from "@creately/automerge-repo"
 
 export type DocType = {
   count: Counter

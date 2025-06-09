@@ -15,10 +15,10 @@
     "test:watch": "npm-watch test"
   },
   "dependencies": {
-    "@automerge/automerge-repo": "workspace:*",
+    "@creately/automerge-repo": "workspace:*",
     "@automerge/automerge-repo-network-broadcastchannel": "workspace:*",
     "@automerge/automerge-repo-network-messagechannel": "workspace:*",
-    "@automerge/automerge-repo-network-websocket": "workspace:*",
+    "@creately/automerge-repo-network-websocket": "workspace:*",
     "@automerge/automerge-repo-storage-indexeddb": "workspace:*"
   },
   "devDependencies": {

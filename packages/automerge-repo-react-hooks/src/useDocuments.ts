@@ -1,4 +1,4 @@
-import { AutomergeUrl } from "@automerge/automerge-repo/slim"
+import { AutomergeUrl } from "@creately/automerge-repo/slim"
 import { ChangeFn, ChangeOptions, Doc } from "@automerge/automerge/slim"
 import { useCallback, useEffect, useState } from "react"
 import { useDocHandles } from "./useDocHandles.js"

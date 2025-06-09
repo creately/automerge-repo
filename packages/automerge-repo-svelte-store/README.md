@@ -14,7 +14,7 @@ npm install @automerge/automerge-repo-svelte-store
 
 ```svelte
 <script>
-  import { Repo } from "@automerge/automerge-repo"
+  import { Repo } from "@creately/automerge-repo"
   import { createAutomergeStore } from "@automerge/automerge-repo-svelte-store"
 
   // Create a repo
@@ -52,7 +52,7 @@ npm install @automerge/automerge-repo-svelte-store
 ```svelte
 <!-- App.svelte -->
 <script>
-  import { Repo } from "@automerge/automerge-repo"
+  import { Repo } from "@creately/automerge-repo"
   import { setContextRepo } from "@automerge/automerge-repo-svelte-store"
   import Counter from './Counter.svelte'
 

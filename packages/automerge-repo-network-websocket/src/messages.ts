@@ -2,7 +2,7 @@ import type {
   Message,
   PeerId,
   PeerMetadata,
-} from "@automerge/automerge-repo/slim"
+} from "@creately/automerge-repo/slim"
 import type { ProtocolVersion } from "./protocolVersion.js"
 
 /** Sent by the client to the server to tell the server the clients PeerID */
@@ -50,6 +50,12 @@ export type FromClientMessage = JoinMessage | Message
 /** A message from the server to the client */
 export type FromServerMessage = PeerMessage | ErrorMessage | Message
 
+/** A message from the client to the server */
+export type CreatelyFromClientMessage = FromClientMessage | AuthMessage
+
+/** A message from the server to the client */
+export type CreatelyFromServerMessage = FromServerMessage | AuthResultMessage | ConnectionClosedMessage
+
 // TYPE GUARDS
 
 export const isJoinMessage = (
@@ -63,3 +69,33 @@ export const isPeerMessage = (
 export const isErrorMessage = (
   message: FromServerMessage
 ): message is ErrorMessage => message.type === "error"
+
+export type AuthMessage = {
+    type: "auth";
+    /** The PeerID of the client */
+    senderId: PeerId;
+
+    /** Metadata presented by the peer  */
+    authToken: string;
+}
+
+export type AuthResultMessage = {
+  type: "auth_result";    /** The PeerID of the client */
+  success: boolean;
+}
+
+export type ConnectionClosedMessage = {
+  type: "connection_removed";
+}
+
+export const isAuthMessage = (
+  message: CreatelyFromClientMessage
+): message is AuthMessage => message.type === "auth"
+
+export const isAuthResultMessage = (
+  message: CreatelyFromServerMessage
+): message is AuthResultMessage => message.type === "auth_result"
+
+export const isConnectionClosedMessage = (
+  message: CreatelyFromServerMessage
+): message is ConnectionClosedMessage => message.type === "connection_removed"

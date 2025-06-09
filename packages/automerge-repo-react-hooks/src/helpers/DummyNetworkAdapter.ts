@@ -1,4 +1,4 @@
-import { Message, NetworkAdapter, PeerId } from "@automerge/automerge-repo/slim"
+import { Message, NetworkAdapter, PeerId } from "@creately/automerge-repo/slim"
 
 export const pause = (t = 0) =>
   new Promise<void>(resolve => setTimeout(() => resolve(), t))
