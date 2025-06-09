@@ -1,4 +1,4 @@
-import { AutomergeUrl, PeerId, Repo } from "@automerge/automerge-repo"
+import { AutomergeUrl, PeerId, Repo } from "@creately/automerge-repo"
 import { render, waitFor } from "@testing-library/react"
 import React from "react"
 import { act } from "react-dom/test-utils"

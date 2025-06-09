@@ -1,6 +1,6 @@
 <script lang="ts">
   import { document } from "@automerge/automerge-repo-svelte-store"
-  import { type AutomergeUrl } from "@automerge/automerge-repo"
+  import { type AutomergeUrl } from "@creately/automerge-repo"
   import type { DocType } from "./doc-type"
 
   export let documentUrl: AutomergeUrl

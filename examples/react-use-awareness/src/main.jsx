@@ -1,7 +1,7 @@
 import React from "react"
 import ReactDOM from "react-dom/client"
 import { App } from "./App"
-import { Repo, isValidAutomergeUrl } from "@automerge/automerge-repo"
+import { Repo, isValidAutomergeUrl } from "@creately/automerge-repo"
 import { BroadcastChannelNetworkAdapter } from "@automerge/automerge-repo-network-broadcastchannel"
 import { RepoContext } from "@automerge/automerge-repo-react-hooks"
 import { v4 } from "uuid"

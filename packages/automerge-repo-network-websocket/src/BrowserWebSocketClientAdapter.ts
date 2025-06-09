@@ -3,7 +3,7 @@ import {
   PeerId,
   PeerMetadata,
   cbor,
-} from "@automerge/automerge-repo/slim"
+} from "@creately/automerge-repo/slim"
 import WebSocket from "isomorphic-ws"
 
 import debug from "debug"
@@ -137,10 +137,28 @@ export class BrowserWebSocketClientAdapter extends WebSocketNetworkAdapter {
     }
   }
 
-  disconnect() {
+  disconnect(force = false) {
     assert(this.peerId)
     assert(this.socket)
     this.send({ type: "leave", senderId: this.peerId })
+    if (force) {
+      this.disconnectForcefully()
+    }
+  }
+
+  protected disconnectForcefully() {
+    const socket = this.socket
+    if (socket) {
+      socket.removeEventListener("open", this.onOpen)
+      socket.removeEventListener("close", this.onClose)
+      socket.removeEventListener("message", this.onMessage)
+      socket.removeEventListener("error", this.onError)
+      socket.close()
+    }
+    clearInterval(this.#retryIntervalId)
+    if (this.remotePeerId)
+      this.emit("peer-disconnected", { peerId: this.remotePeerId })
+    this.socket = undefined
   }
 
   send(message: FromClientMessage) {

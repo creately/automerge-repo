@@ -4,7 +4,7 @@ import {
   PeerId,
   Repo,
   stringifyAutomergeUrl,
-} from "@automerge/automerge-repo"
+} from "@creately/automerge-repo"
 import { DummyStorageAdapter } from "@automerge/automerge-repo/helpers/DummyStorageAdapter.js"
 import { act, render, waitFor } from "@testing-library/react"
 import React from "react"

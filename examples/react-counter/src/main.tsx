@@ -1,7 +1,7 @@
 import React from "react"
 import ReactDOM from "react-dom/client"
 import { App } from "./App.js"
-import { DocHandle, Repo, isValidAutomergeUrl } from "@automerge/automerge-repo"
+import { DocHandle, Repo, isValidAutomergeUrl } from "@creately/automerge-repo"
 import { MessageChannelNetworkAdapter } from "@automerge/automerge-repo-network-messagechannel"
 import { IndexedDBStorageAdapter } from "@automerge/automerge-repo-storage-indexeddb"
 import { RepoContext } from "@automerge/automerge-repo-react-hooks"

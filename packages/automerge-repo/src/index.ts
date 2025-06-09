@@ -15,7 +15,7 @@
  * A typical example of how to use this library then might look like this:
  *
  * ```typescript
- * import { Repo } from "@automerge/automerge-repo";
+ * import { Repo } from "@creately/automerge-repo";
  *
  * const repo = new Repo({
  *   storage: <storage adapter>,
@@ -36,6 +36,8 @@ export {
   generateAutomergeUrl,
 } from "./AutomergeUrl.js"
 export { Repo } from "./Repo.js"
+export { CappedRepo } from "./CappedRepo.js"
+export { ProxyRepo } from "./ProxyRepo.js"
 export { NetworkAdapter } from "./network/NetworkAdapter.js"
 export type { NetworkAdapterInterface } from "./network/NetworkAdapterInterface.js"
 export { isRepoMessage } from "./network/messages.js"

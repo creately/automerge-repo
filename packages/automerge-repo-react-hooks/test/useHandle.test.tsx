@@ -4,7 +4,7 @@ import {
   DocHandle,
   PeerId,
   Repo,
-} from "@automerge/automerge-repo"
+} from "@creately/automerge-repo"
 import { DummyStorageAdapter } from "@automerge/automerge-repo/test/helpers/DummyStorageAdapter"
 import { render, waitFor } from "@testing-library/react"
 import { describe, expect, it, vi } from "vitest"

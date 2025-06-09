@@ -12,14 +12,18 @@
  *
  * @module
  * */
-export { BrowserWebSocketClientAdapter } from "./BrowserWebSocketClientAdapter.js"
-export { NodeWSServerAdapter } from "./NodeWSServerAdapter.js"
+export { BrowserWebSocketClientAdapter } from "./CreatelyBrowserWebSocketClientAdapter.js"
+export { BrowserWebSocketClientAdapter as BaseBrowserWebSocketClientAdapter } from "./BrowserWebSocketClientAdapter.js"
+export { NodeWSServerAdapter } from "./CreatelyNodeWSServerAdapter.js"
+export { NodeWSServerAdapter as BaseNodeWSServerAdapter } from "./NodeWSServerAdapter.js"
 export type {
-  FromClientMessage,
-  FromServerMessage,
+  CreatelyFromClientMessage as FromClientMessage,
+  CreatelyFromServerMessage as FromServerMessage,
   JoinMessage,
   LeaveMessage,
   ErrorMessage,
   PeerMessage,
+  AuthMessage,
+  AuthResultMessage
 } from "./messages.js"
 export type { ProtocolVersion, ProtocolV1 } from "./protocolVersion.js"

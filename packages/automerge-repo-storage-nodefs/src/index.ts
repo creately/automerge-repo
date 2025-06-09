@@ -7,7 +7,7 @@ import {
   Chunk,
   StorageAdapterInterface,
   type StorageKey,
-} from "@automerge/automerge-repo/slim"
+} from "@creately/automerge-repo/slim"
 import fs from "fs"
 import path from "path"
 import { rimraf } from "rimraf"

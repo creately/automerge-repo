@@ -4,6 +4,7 @@ import { PeerId, SessionId } from "../types.js"
 import type {
   NetworkAdapterInterface,
   PeerDisconnectedPayload,
+  PeerLeftPayload,
   PeerMetadata,
 } from "./NetworkAdapterInterface.js"
 import {
@@ -37,6 +38,10 @@ export class NetworkSubsystem extends EventEmitter<NetworkSubsystemEvents> {
     super()
     this.#log = debug(`automerge-repo:network:${this.peerId}`)
     adapters.forEach(a => this.addNetworkAdapter(a))
+  }
+
+  get adapters() {
+    return this.#adapters
   }
 
   addNetworkAdapter(networkAdapter: NetworkAdapterInterface) {
@@ -178,6 +183,7 @@ function randomPeerId() {
 export interface NetworkSubsystemEvents {
   peer: (payload: PeerPayload) => void
   "peer-disconnected": (payload: PeerDisconnectedPayload) => void
+  "peer-left": (payload: PeerLeftPayload) => void
   message: (payload: RepoMessage) => void
   ready: () => void
 }

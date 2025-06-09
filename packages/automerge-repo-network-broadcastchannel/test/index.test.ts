@@ -1,4 +1,4 @@
-import { PeerId } from "@automerge/automerge-repo"
+import { PeerId } from "@creately/automerge-repo"
 import { describe, it } from "vitest"
 import {
   runNetworkAdapterTests,

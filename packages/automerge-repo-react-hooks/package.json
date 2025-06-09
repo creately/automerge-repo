@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@automerge/automerge": "^2.2.5",
-    "@automerge/automerge-repo": "workspace:*",
+    "@creately/automerge-repo": "workspace:*",
     "eventemitter3": "^5.0.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

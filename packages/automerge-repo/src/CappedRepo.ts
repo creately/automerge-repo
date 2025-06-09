@@ -1,4 +1,4 @@
-import { next as Automerge, DecodedChange, DecodedSyncMessage, Patch, SyncMessage } from "@automerge/automerge/slim"
+import { next as Automerge } from "@automerge/automerge/slim"
 import debug from "debug"
 import { EventEmitter } from "eventemitter3"
 import {
@@ -22,6 +22,8 @@ import { StorageId } from "./storage/types.js"
 import { CollectionSynchronizer } from "./synchronizer/CollectionSynchronizer.js"
 import { SyncStatePayload } from "./synchronizer/Synchronizer.js"
 import type { AnyDocumentId, DocumentId, PeerId } from "./types.js"
+import { Repo } from "./Repo.js"
+import { LRUCache } from "lru-cache"
 
 /** A Repo is a collection of documents with networking, syncing, and storage capabilities. */
 /** The `Repo` is the main entry point of this library
@@ -31,7 +33,7 @@ import type { AnyDocumentId, DocumentId, PeerId } from "./types.js"
  * more {@link NetworkAdapter}s. Once you have a `Repo` you can use it to
  * obtain {@link DocHandle}s.
  */
-export class Repo extends EventEmitter<RepoEvents> {
+export class CappedRepo<X = any> extends EventEmitter<RepoEvents> {
   #log: debug.Debugger
 
   /** @hidden */
@@ -43,7 +45,7 @@ export class Repo extends EventEmitter<RepoEvents> {
   /** @hidden */
   saveDebounceRate = 100
 
-  #handleCache: Record<DocumentId, DocHandle<any>> = {}
+  #handleCache: LRUCache<DocumentId, DocHandle<any>>;
 
   #synchronizer: CollectionSynchronizer
 
@@ -66,8 +68,8 @@ export class Repo extends EventEmitter<RepoEvents> {
     sharePolicy,
     isEphemeral = storage === undefined,
     enableRemoteHeadsGossiping = false,
+    cachingOptions = { max: 1000 },
     docTimeoutDelay = -1,
-    localDocsOnly = false,
   }: RepoConfig = {}) {
     super()
     this.#remoteHeadsGossipingEnabled = enableRemoteHeadsGossiping
@@ -76,13 +78,22 @@ export class Repo extends EventEmitter<RepoEvents> {
     if (docTimeoutDelay > 0) {
       this.defaultDocTimeoutDelay = docTimeoutDelay;
     }
+    const defaultCachingOptions = {
+      max: 1000,
+      /* dispose: (key, handle) => {
+        // handle.dispose()  // this is a noop if the handle is already disposed
+      }, */
+    }
+    this.#handleCache = new LRUCache<DocumentId, DocHandle<X>>({
+      ...defaultCachingOptions,
+      ...cachingOptions,
+    });
 
     // DOC COLLECTION
 
     // The `document` event is fired by the DocCollection any time we create a new document or look
     // up a document by ID. We listen for it in order to wire up storage and network synchronization.
     this.on("document", async ({ handle, isNew }) => {
-      let docFoundLocally = isNew;
       if (storageSubsystem) {
         // Save when the document changes, but no more often than saveDebounceRate.
         const saveFn = ({
@@ -100,7 +111,6 @@ export class Repo extends EventEmitter<RepoEvents> {
           // Try to load from disk
           const loadedDoc = await storageSubsystem.loadDoc(handle.documentId)
           if (loadedDoc) {
-            docFoundLocally = true;
             handle.update(() => loadedDoc)
           }
         }
@@ -113,25 +123,18 @@ export class Repo extends EventEmitter<RepoEvents> {
         })
       })
 
-      if (!localDocsOnly) {
-        if (this.networkSubsystem.isReady()) {
-          handle.request()
-        } else {
-          handle.awaitNetwork()
-          this.networkSubsystem
-            .whenReady()
-            .then(() => {
-              handle.networkReady()
-            })
-            .catch(err => {
-              this.#log("error waiting for network", { err })
-            })
-        }
-      } else if (!docFoundLocally) {
-        // after initializing mark the document as unavailable
-        setImmediate(() => {
-          handle.unavailable()
-        });
+      if (this.networkSubsystem.isReady()) {
+        handle.request()
+      } else {
+        handle.awaitNetwork()
+        this.networkSubsystem
+          .whenReady()
+          .then(() => {
+            handle.networkReady()
+          })
+          .catch(err => {
+            this.#log("error waiting for network", { err })
+          })
       }
 
       // Register the document with the synchronizer. This advertises our interest in the document.
@@ -151,7 +154,7 @@ export class Repo extends EventEmitter<RepoEvents> {
 
     // SYNCHRONIZER
     // The synchronizer uses the network subsystem to keep documents in sync with peers.
-    this.#synchronizer = new CollectionSynchronizer(this)
+    this.#synchronizer = new CollectionSynchronizer(this as unknown as Repo)
 
     // When the synchronizer emits messages, send them to peers
     this.#synchronizer.on("message", message => {
@@ -225,7 +228,7 @@ export class Repo extends EventEmitter<RepoEvents> {
     this.#synchronizer.on("sync-state", message => {
       this.#saveSyncState(message)
 
-      const handle = this.#handleCache[message.documentId]
+      const handle = this.#handleCache.get(message.documentId)!
 
       const { storageId } = this.peerMetadataByPeerId[message.peerId] || {}
       if (!storageId) {
@@ -278,7 +281,7 @@ export class Repo extends EventEmitter<RepoEvents> {
       })
 
       this.#remoteHeadsSubscriptions.on("remote-heads-changed", message => {
-        const handle = this.#handleCache[message.documentId]
+        const handle = this.#handleCache.get(message.documentId)!
         handle.setRemoteHeads(message.storageId, message.remoteHeads)
       })
     }
@@ -355,15 +358,15 @@ export class Repo extends EventEmitter<RepoEvents> {
     timeoutDelay?: number
   }) {
     // If we have the handle cached, return it
-    if (this.#handleCache[documentId]) return this.#handleCache[documentId]
+    if (this.#handleCache.has(documentId)) return this.#handleCache.get(documentId)!
 
     // If not, create a new handle, cache it, and return it
     if (!documentId) throw new Error(`Invalid documentId ${documentId}`)
-    const options = { isNew, initialValue };
-    // timeoutDelay is only set for existing documents
-    if (timeoutDelay > 0 && !isNew) Object.assign(options, { timeoutDelay });
+      const options = { isNew, initialValue };
+      // timeoutDelay is only set for existing documents
+      if (timeoutDelay > 0 && !isNew) Object.assign(options, { timeoutDelay });
     const handle = new DocHandle<T>(documentId, options)
-    this.#handleCache[documentId] = handle
+    this.#handleCache.set(documentId, handle)
     return handle
   }
 
@@ -375,68 +378,6 @@ export class Repo extends EventEmitter<RepoEvents> {
   /** Returns a list of all connected peer ids */
   get peers(): PeerId[] {
     return this.#synchronizer.peers
-  }
-
-  async getDocumentSyncState(documentId: DocumentId, peerId: PeerId) {
-    if (!this.#handleCache[documentId]) {
-      throw new Error("document not loaded")
-    }
-    return this.#synchronizer.getDocumentSyncState(documentId, peerId)
-  }
-
-  async getPatches(syncMsg: any): Promise<Omit<DecodedSyncMessage, 'changes'> & {
-    changes: DecodedChange[]
-    patches: Patch[]
-  }> {
-    const syncMessage = syncMsg.data as SyncMessage;
-    const documentId = syncMsg.documentId as DocumentId;
-    const peerId = syncMsg.senderId as PeerId;
-    const decodedSyncMessage = Automerge.decodeSyncMessage(syncMessage);
-    let changes, patches: Patch[] = [];
-    const doc = this.#handleCache[documentId].docSync()!;
-    const cloned = Automerge.clone(doc);
-    try {
-      changes = decodedSyncMessage.changes.map(Automerge.decodeChange);
-      Automerge.applyChanges(cloned, decodedSyncMessage.changes, {
-        patchCallback: _patches => {
-          patches = _patches;
-        }
-      });
-    } catch (error) {
-      if (!this.#handleCache[documentId]) {
-        throw new Error("document not loaded")
-      }
-      const syncState = await this.#synchronizer.getDocumentSyncState(documentId, peerId);
-      const [doc1] = Automerge.receiveSyncMessage(cloned, syncState, syncMessage, {
-        patchCallback: _patches => {
-          patches = _patches;
-        }
-      });
-      changes = Automerge.getChanges(doc, doc1).map(Automerge.decodeChange)
-    }
-    return { ...decodedSyncMessage, changes, patches };
-  }
-
-  /**
-   * dry apply a sync message ang get the new state
-   * @param message SyncMessage from a peer
-   * @returns 
-   */
-  async dryApplySyncMessage(message: any) {
-    const documentId: DocumentId = message.documentId;
-    const syncState = await this.#synchronizer.getDocumentSyncState(documentId, message.senderId);
-    const doc = Automerge.clone(this.#handleCache[documentId].docSync()!);
-    let patches: Patch[] = [];
-    const result = Automerge.receiveSyncMessage(doc, syncState, message.data, {
-      patchCallback: _patches => {
-        patches = _patches;
-      },
-    });
-    return {
-      oldState: syncState,
-      result,
-      patches,
-    };
   }
 
   getStorageIdOfPeer(peerId: PeerId): StorageId | undefined {
@@ -502,30 +443,29 @@ export class Repo extends EventEmitter<RepoEvents> {
    * Retrieves a document by id. It gets data from the local system, but also emits a `document`
    * event to advertise interest in the document.
    */
-  find<T>(
+  find<T = X>(
     /** The url or documentId of the handle to retrieve */
     id: AnyDocumentId
   ): DocHandle<T> {
     const documentId = interpretAsDocumentId(id)
 
     // If we have the handle cached, return it
-    if (this.#handleCache[documentId]) {
-      if (this.#handleCache[documentId].isUnavailable()) {
+    if (this.#handleCache.has(documentId)) {
+      if (this.#handleCache.get(documentId)!.isUnavailable()) {
         // this ensures that the event fires after the handle has been returned
         setTimeout(() => {
-          this.#handleCache[documentId].emit("unavailable", {
-            handle: this.#handleCache[documentId],
+          this.#handleCache.get(documentId)!.emit("unavailable", {
+            handle: this.#handleCache.get(documentId)!,
           })
         })
       }
-      return this.#handleCache[documentId]
+      return this.#handleCache.get(documentId)!
     }
 
-    const options = {
+    const handle = this.#getHandle<T>({
       documentId,
       isNew: false,
-    };
-    const handle = this.#getHandle<T>(options) as DocHandle<T>
+    }) as DocHandle<T>
     this.emit("document", { handle, isNew: false })
     return handle
   }
@@ -539,7 +479,7 @@ export class Repo extends EventEmitter<RepoEvents> {
     const handle = this.#getHandle({ documentId, isNew: false })
     handle.delete()
 
-    delete this.#handleCache[documentId]
+    this.#handleCache.delete(documentId)
     this.emit("delete-document", { documentId })
   }
 
@@ -607,7 +547,7 @@ export class Repo extends EventEmitter<RepoEvents> {
   }
 
   releaseDoc(docId: DocumentId) {
-    delete this.#handleCache[docId]
+    this.#handleCache.delete(docId)
     this.#synchronizer.removeDocument(docId)
     // should we remove from storage. if the storage is shared this can lead to problems
   }
@@ -623,8 +563,8 @@ export class Repo extends EventEmitter<RepoEvents> {
       return
     }
     const handles = documents
-      ? documents.map(id => this.#handleCache[id])
-      : Object.values(this.#handleCache)
+      ? documents.map(id => this.#handleCache.get(id)!)
+      : Array.from(this.#handleCache.values())
     await Promise.all(
       handles.map(async handle => {
         const doc = handle.docSync()
@@ -634,12 +574,6 @@ export class Repo extends EventEmitter<RepoEvents> {
         return this.storageSubsystem!.saveDoc(handle.documentId, doc)
       })
     )
-  }
-  shutdown(): Promise<void> {
-    this.networkSubsystem.adapters.forEach(adapter => {
-      adapter.disconnect()
-    })
-    return this.flush()
   }
 }
 
@@ -666,18 +600,13 @@ export interface RepoConfig {
   /**
    * Whether to enable the experimental remote heads gossiping feature
    */
-  enableRemoteHeadsGossiping?: boolean
+  enableRemoteHeadsGossiping?: boolean,
+  cachingOptions?: any,
 
   /**
    * default DocHandle timeoutDelay in milliseconds
    */
-  docTimeoutDelay?: number,
-
-  /**
-   * Whether to only share documents that are stored locally
-   * if this is true, repo will not try to load docs via network
-   */
-  localDocsOnly?: boolean;
+  docTimeoutDelay?: number
 }
 
 /** A function that determines whether we should share a document with a peer

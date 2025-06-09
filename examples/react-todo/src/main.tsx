@@ -1,6 +1,6 @@
-import { DocHandle, Repo, isValidAutomergeUrl } from "@automerge/automerge-repo"
+import { DocHandle, Repo, isValidAutomergeUrl } from "@creately/automerge-repo"
 import { BroadcastChannelNetworkAdapter } from "@automerge/automerge-repo-network-broadcastchannel"
-import { BrowserWebSocketClientAdapter } from "@automerge/automerge-repo-network-websocket"
+import { BrowserWebSocketClientAdapter } from "@creately/automerge-repo-network-websocket"
 import { RepoContext } from "@automerge/automerge-repo-react-hooks"
 import { IndexedDBStorageAdapter } from "@automerge/automerge-repo-storage-indexeddb"
 import React from "react"

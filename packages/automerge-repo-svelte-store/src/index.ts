@@ -10,7 +10,7 @@
  * ```svelte
  * // App.svelte
  * <script lang="ts">
- *   import { Repo } from "@automerge/automerge-repo"
+ *   import { Repo } from "@creately/automerge-repo"
  *   import Counter from './lib/Counter.svelte'
  *   import { setContextRepo } from "@automerge/automerge-repo-svelte-store"
  *
@@ -33,7 +33,7 @@
  * ```svelte
  * // Counter.svelte`
  * <script lang="ts">
- *   import type { DocumentId } from "@automerge/automerge-repo"
+ *   import type { DocumentId } from "@creately/automerge-repo"
  *   import { document } from "@automerge/automerge-repo-svelte-store"
  *
  *   export let docId: DocumentId
@@ -61,7 +61,7 @@ import {
   AutomergeUrl,
   DocHandleChangePayload,
   Repo,
-} from "@automerge/automerge-repo/slim"
+} from "@creately/automerge-repo/slim"
 import { getContext, setContext } from "svelte"
 import { writable } from "svelte/store"
 

@@ -23,7 +23,7 @@ Other packages in this monorepo include:
 
 #### Network adapters
 
-- [@automerge/automerge-repo-network-websocket](/packages/automerge-repo-network-websocket/): Network adapters
+- [@creately/automerge-repo-network-websocket](/packages/automerge-repo-network-websocket/): Network adapters
   for both sides of a client/server configuration over websocket
 - [@automerge/automerge-repo-network-messagechannel](/packages/automerge-repo-network-messagechannel/): A
   network adapter that uses the [MessageChannel
@@ -153,7 +153,7 @@ RepoContext. We also create a document and store its `documentId` in localStorag
 import React from "react"
 import ReactDOM from "react-dom/client"
 import App from "./App.js"
-import { Repo } from "@automerge/automerge-repo"
+import { Repo } from "@creately/automerge-repo"
 import { BroadcastChannelNetworkAdapter } from "@automerge/automerge-repo-network-broadcastchannel"
 import { IndexedDBStorageAdapter } from "@automerge/automerge-repo-storage-indexeddb"
 import { RepoContext } from "@automerge/automerge-repo-react-hooks"
@@ -184,7 +184,7 @@ the document to render a button that increments the count.
 ```tsx
 // App.tsx
 import { useDocument } from "@automerge/automerge-repo-react-hooks"
-import { DocumentId } from "@automerge/automerge-repo"
+import { DocumentId } from "@creately/automerge-repo"
 
 interface Doc {
   count: number
@@ -233,7 +233,7 @@ Now import it and add it to your list of network adapters:
 
 ```ts
 // main.tsx
-import { BrowserWebSocketClientAdapter } from "@automerge/automerge-repo-network-websocket" // <-- add this line
+import { BrowserWebSocketClientAdapter } from "@creately/automerge-repo-network-websocket" // <-- add this line
 
 // ...
 

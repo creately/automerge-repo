@@ -1,4 +1,4 @@
-import { AutomergeUrl } from "@automerge/automerge-repo"
+import { AutomergeUrl } from "@creately/automerge-repo"
 
 /** Inside an Automerge change function, any arrays found on the document have these utility functions */
 export interface ExtendedArray<T> extends Array<T> {
