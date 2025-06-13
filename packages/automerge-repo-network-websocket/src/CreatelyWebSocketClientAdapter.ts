@@ -1,6 +1,7 @@
 import { WebSocketClientAdapter as BaseAdapter } from './WebSocketClientAdapter.js';
 import { cbor, PeerId, PeerMetadata } from '@creately/automerge-repo/slim';
 import { AuthMessage, CreatelyFromClientMessage, CreatelyFromServerMessage, isAuthResultMessage, isConnectionClosedMessage } from './messages.js';
+import WebSocket from "isomorphic-ws"
 
 export class CreatelyWebSocketClientAdapter extends BaseAdapter {
 
@@ -13,9 +14,10 @@ export class CreatelyWebSocketClientAdapter extends BaseAdapter {
         private options?: {
             connectionFailureCallback?: () => void;
             connectionClosedCallback?: () => void;
+            forceReadyAfterMS?: number;
         }
       ) {
-        super(url, retryInterval);
+        super(url, retryInterval, options?.forceReadyAfterMS || 3000);
       }
 
     authenticate() {

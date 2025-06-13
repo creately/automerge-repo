@@ -52,7 +52,8 @@ export class WebSocketClientAdapter extends WebSocketNetworkAdapter {
 
   constructor(
     public readonly url: string,
-    public readonly retryInterval = 5000
+    public readonly retryInterval = 5000,
+    private forceReadyAfterMS: number = 1000
   ) {
     super()
     this.#log = this.#log.extend(url)
@@ -91,7 +92,7 @@ export class WebSocketClientAdapter extends WebSocketNetworkAdapter {
     // Mark this adapter as ready if we haven't received an ack in 1 second.
     // We might hear back from the other end at some point but we shouldn't
     // hold up marking things as unavailable for any longer
-    setTimeout(() => this.#forceReady(), 1000)
+    setTimeout(() => this.#forceReady(), this.forceReadyAfterMS)
     this.join()
   }
 
